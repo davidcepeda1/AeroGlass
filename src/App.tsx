@@ -14,9 +14,15 @@ interface SongInfo {
   title: string;
   artist: string;
   isPlaying: boolean;
+  coverArt: string | null;
 }
 
-const EMPTY_SONG: SongInfo = { title: "", artist: "", isPlaying: false };
+const EMPTY_SONG: SongInfo = {
+  title: "",
+  artist: "",
+  isPlaying: false,
+  coverArt: null,
+};
 
 function trackKey(song: SongInfo) {
   return `${song.title}|${song.artist}`;
@@ -71,7 +77,7 @@ function App() {
       <div className="content" data-tauri-drag-region>
         <div className="icon-container" data-tauri-drag-region>
           <img
-            src={coverPlaceholder}
+            src={displaySong.coverArt ?? coverPlaceholder}
             alt="Album cover"
             data-tauri-drag-region
           />

@@ -186,7 +186,7 @@ el estándar de Linux para reproductores multimedia.
 
 ## Ideas para diferenciarlo más del original (opcional, después de la Fase 9)
 
-- [ ] Carátula del álbum real (MPRIS y Windows Media Session exponen el thumbnail)
+- [x] Carátula del álbum real (MPRIS y Windows Media Session exponen el thumbnail)
 - [ ] Reemplazar el polling por eventos (`MediaPropertiesChanged` en Windows,
       señales de D-Bus en Linux) en vez de preguntar cada segundo
 - [ ] Barra de progreso / tiempo transcurrido de la canción

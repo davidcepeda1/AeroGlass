@@ -39,7 +39,7 @@ Name "AeroGlass" is fixed. The visual system is pinned to two concrete reference
 
 ## Evidence on Hand
 
-None (no logos, screenshots, or copy commitments beyond the code itself). Cover art is currently a placeholder gradient SVG — real album art will come from the OS media session later (documented as a post-launch idea in Planning.md, not yet implemented).
+None (no logos or copy commitments beyond the code itself). Real album art is now wired end-to-end: `SongInfo.coverArt` (Linux: MPRIS `mpris:artUrl`, passed through as-is for http(s) sources or read+base64-inlined for `file://` sources; Windows: `Thumbnail()`'s raw stream, base64-inlined — unverified, no Windows machine available). The gradient SVG (`src/assets/cover-placeholder.svg`) is now only the fallback for when no session/art is available.
 
 ## Product Principles
 

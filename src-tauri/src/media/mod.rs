@@ -6,6 +6,9 @@ pub struct SongInfo {
     pub title: String,
     pub artist: String,
     pub is_playing: bool,
+    /// Album art as something an `<img>` tag can use directly: an http(s)
+    /// URL, or a `data:` URI when the source only exposes raw image bytes.
+    pub cover_art: Option<String>,
 }
 
 impl SongInfo {
@@ -16,6 +19,7 @@ impl SongInfo {
             title: String::new(),
             artist: String::new(),
             is_playing: false,
+            cover_art: None,
         }
     }
 }
