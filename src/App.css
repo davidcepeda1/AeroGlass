@@ -219,6 +219,17 @@ p {
   box-shadow: none;
 }
 
+/* Modo "live": los niveles reales del audio del sistema controlan cada
+   barra por JS (transform/opacity/box-shadow inline) — se apaga la
+   animación CSS decorativa para no pelear con esos valores. */
+.wave-container.live .wave-bar {
+  animation-name: none;
+  transition:
+    transform 0.08s linear,
+    opacity 0.08s linear,
+    box-shadow 0.08s linear;
+}
+
 @keyframes wave {
   0%,
   100% {

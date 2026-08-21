@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import coverPlaceholder from "./assets/cover-placeholder.svg";
 import WaveAnimation from "./WaveAnimation";
@@ -9,6 +10,9 @@ import "./App.css";
 const WAVE_BARS = 4;
 const POLL_INTERVAL_MS = 1000;
 const FADE_MS = 300;
+// If no "audio-levels" event arrives for this long, treat the system audio
+// capture as unavailable/stalled and fall back to the decorative animation.
+const AUDIO_LEVELS_TIMEOUT_MS = 1500;
 
 interface SongInfo {
   title: string;
@@ -36,7 +40,27 @@ function App() {
   const [waveConfig, setWaveConfig] = useState(() =>
     generateWaveConfig(WAVE_BARS),
   );
+  const [audioLevels, setAudioLevels] = useState<number[] | null>(null);
+  const lastLevelsAtRef = useRef(0);
   const trackKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const unlisten = listen<number[]>("audio-levels", (event) => {
+      lastLevelsAtRef.current = Date.now();
+      setAudioLevels(event.payload);
+    });
+
+    const watchdog = setInterval(() => {
+      if (Date.now() - lastLevelsAtRef.current > AUDIO_LEVELS_TIMEOUT_MS) {
+        setAudioLevels((current) => (current === null ? current : null));
+      }
+    }, 500);
+
+    return () => {
+      unlisten.then((fn) => fn());
+      clearInterval(watchdog);
+    };
+  }, []);
 
   useEffect(() => {
     const applySong = (song: SongInfo) => {
@@ -88,7 +112,11 @@ function App() {
             <span data-tauri-drag-region>{title}</span>
           </h1>
           <p data-tauri-drag-region>{artist}</p>
-          <WaveAnimation bars={waveConfig} isPlaying={isPlaying} />
+          <WaveAnimation
+            bars={waveConfig}
+            isPlaying={isPlaying}
+            levels={audioLevels}
+          />
         </div>
 
         <div className="controls">
