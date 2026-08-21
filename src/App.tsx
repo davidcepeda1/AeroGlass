@@ -1,19 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import coverPlaceholder from "./assets/cover-placeholder.svg";
+import WaveAnimation from "./WaveAnimation";
+import { generateWaveConfig } from "./lib/wave";
 import "./App.css";
+
+const WAVE_BARS = 4;
 
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
+  const title = "No track playing";
+  const artist = "—";
+
+  const [waveConfig, setWaveConfig] = useState(() =>
+    generateWaveConfig(WAVE_BARS),
+  );
+
+  useEffect(() => {
+    setWaveConfig(generateWaveConfig(WAVE_BARS));
+  }, [title]);
 
   return (
     <main className="card">
       <div className="content">
         <img src={coverPlaceholder} alt="Album cover" className="cover" />
         <div className="info">
-          <p className="title">No track playing</p>
-          <p className="artist">—</p>
+          <p className="title">{title}</p>
+          <p className="artist">{artist}</p>
         </div>
+        <WaveAnimation bars={waveConfig} isPlaying={isPlaying} />
       </div>
 
       <div className="controls">

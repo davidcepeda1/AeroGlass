@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "bounce-easing",
+        "value": "wave-bounce",
+        "createdAt": "2026-08-21T03:52:05.455Z",
+        "reason": "audio equalizer bar animation, uses ease-in-out timing (not an elastic/spring curve) — 'bounce' in the name just describes the literal up/down visualizer motion, domain-appropriate for a music widget"
+      }
+    ]
+  }
+}

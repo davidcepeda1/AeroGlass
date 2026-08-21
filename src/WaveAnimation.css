@@ -1,0 +1,31 @@
+.wave {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.wave-bar {
+  width: 3px;
+  height: 20%;
+  border-radius: 2px;
+  background: #f2f2f5;
+  transform-origin: bottom;
+}
+
+.wave:not(.paused) .wave-bar {
+  animation-name: wave-bounce;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes wave-bounce {
+  from {
+    height: 20%;
+  }
+  to {
+    height: var(--peak);
+  }
+}

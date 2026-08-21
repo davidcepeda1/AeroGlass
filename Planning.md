@@ -89,13 +89,13 @@ En `src-tauri/tauri.conf.json`, configura la ventana con:
 
 **Objetivo:** barras animadas que reaccionan a si hay música sonando o no.
 
-- [ ] Generar un patrón de N barras con altura y delay de animación aleatorios
+- [x] Generar un patrón de N barras con altura y delay de animación aleatorios
       (piensa en una función `generateWaveConfig(bars: number)`)
-- [ ] Crear un componente `WaveAnimation` que reciba ese patrón y el estado
+- [x] Crear un componente `WaveAnimation` que reciba ese patrón y el estado
       `isPlaying`
-- [ ] En CSS: animación `@keyframes` que sube/baja la altura de cada barra en loop,
+- [x] En CSS: animación `@keyframes` que sube/baja la altura de cada barra en loop,
       y una clase `.paused` que la congela cuando no hay reproducción
-- [ ] Regenerar el patrón cada vez que cambia de canción (para que no se vea repetitivo)
+- [x] Regenerar el patrón cada vez que cambia de canción (para que no se vea repetitivo)
 
 **Commit sugerido:** `feat: animación de barras de audio (wave animation)`
 
