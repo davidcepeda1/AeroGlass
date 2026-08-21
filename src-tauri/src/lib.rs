@@ -1,3 +1,4 @@
+mod audio;
 mod media;
 
 use media::{MediaAction, SongInfo};
@@ -49,6 +50,8 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![check_music, control_media])
         .setup(|app| {
+            audio::start(app.handle().clone());
+
             let show_hide = MenuItem::with_id(app, "show_hide", "Show/Hide", true, None::<&str>)?;
             let prev = MenuItem::with_id(app, "prev", "Previous", true, None::<&str>)?;
             let play_pause =

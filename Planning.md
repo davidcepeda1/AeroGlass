@@ -195,3 +195,9 @@ el estándar de Linux para reproductores multimedia.
       fijar siempre-encima, salir) — verificado a nivel D-Bus/StatusNotifierItem
 - [x] `visibleOnAllWorkspaces` para que no desaparezca al cambiar de escritorio
       virtual en Linux (Windows no soporta esta opción por limitación de Tauri)
+- [ ] Ecualizador reactivo al audio real (no animación aleatoria):
+  - [x] Captura del monitor de PulseAudio/PipeWire + FFT en Linux (`libpulse-simple-binding`
+        + `rustfft`), verificado con datos reales en vivo — requiere `libpulse-dev` en el
+        sistema para compilar
+  - [ ] Captura loopback vía WASAPI en Windows (`cpal`)
+  - [ ] Frontend: mover las barras con los niveles reales en vez de `generateWaveConfig`
