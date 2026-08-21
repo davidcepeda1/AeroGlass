@@ -75,11 +75,11 @@ En `src-tauri/tauri.conf.json`, configura la ventana con:
 
 **Objetivo:** botones prev / play-pause / next, con estado local simulado.
 
-- [ ] Agregar los tres botones con íconos de `lucide-react` (`SkipBack`, `Play`/`Pause`,
+- [x] Agregar los tres botones con íconos de `lucide-react` (`SkipBack`, `Play`/`Pause`,
       `SkipForward`)
-- [ ] Manejar un estado local `isPlaying` (boolean) solo para alternar el ícono al hacer
+- [x] Manejar un estado local `isPlaying` (boolean) solo para alternar el ícono al hacer
       clic — todavía sin conectar a Tauri
-- [ ] Diferenciar visualmente el botón central (primario) de los laterales (secundarios)
+- [x] Diferenciar visualmente el botón central (primario) de los laterales (secundarios)
 
 **Commit sugerido:** `feat: controles de reproducción (UI, sin backend aún)`
 
