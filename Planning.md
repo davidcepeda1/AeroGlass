@@ -193,3 +193,5 @@ el estándar de Linux para reproductores multimedia.
 - [ ] Selector de sesión cuando hay varias apps reproduciendo a la vez
 - [x] Bandeja del sistema con menú (mostrar/ocultar, prev/play-pause/next,
       fijar siempre-encima, salir) — verificado a nivel D-Bus/StatusNotifierItem
+- [x] `visibleOnAllWorkspaces` para que no desaparezca al cambiar de escritorio
+      virtual en Linux (Windows no soporta esta opción por limitación de Tauri)
