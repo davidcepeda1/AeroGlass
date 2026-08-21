@@ -5,6 +5,10 @@ mod linux;
 #[cfg(target_os = "linux")]
 pub use linux::start;
 
-/// Windows loopback capture (WASAPI) lands in a follow-up commit.
-#[cfg(not(target_os = "linux"))]
+#[cfg(target_os = "windows")]
+mod windows;
+#[cfg(target_os = "windows")]
+pub use windows::start;
+
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
 pub fn start(_app: tauri::AppHandle) {}

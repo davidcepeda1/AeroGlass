@@ -199,5 +199,6 @@ el estándar de Linux para reproductores multimedia.
   - [x] Captura del monitor de PulseAudio/PipeWire + FFT en Linux (`libpulse-simple-binding`
         + `rustfft`), verificado con datos reales en vivo — requiere `libpulse-dev` en el
         sistema para compilar
-  - [ ] Captura loopback vía WASAPI en Windows (`cpal`)
+  - [x] Captura loopback vía WASAPI en Windows (`cpal`, activa loopback solo al tratar
+        el dispositivo de salida como entrada) — sin verificar, no hay Windows a mano
   - [ ] Frontend: mover las barras con los niveles reales en vez de `generateWaveConfig`
