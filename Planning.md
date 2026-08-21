@@ -191,3 +191,5 @@ el estándar de Linux para reproductores multimedia.
       señales de D-Bus en Linux) en vez de preguntar cada segundo
 - [ ] Barra de progreso / tiempo transcurrido de la canción
 - [ ] Selector de sesión cuando hay varias apps reproduciendo a la vez
+- [x] Bandeja del sistema con menú (mostrar/ocultar, prev/play-pause/next,
+      fijar siempre-encima, salir) — verificado a nivel D-Bus/StatusNotifierItem
