@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import coverPlaceholder from "./assets/cover-placeholder.svg";
@@ -8,6 +8,7 @@ import "./App.css";
 
 const WAVE_BARS = 4;
 const POLL_INTERVAL_MS = 1000;
+const FADE_MS = 300;
 
 interface SongInfo {
   title: string;
@@ -15,35 +16,59 @@ interface SongInfo {
   isPlaying: boolean;
 }
 
-function App() {
-  const [song, setSong] = useState<SongInfo | null>(null);
+const EMPTY_SONG: SongInfo = { title: "", artist: "", isPlaying: false };
 
+function trackKey(song: SongInfo) {
+  return `${song.title}|${song.artist}`;
+}
+
+function App() {
+  const [displaySong, setDisplaySong] = useState<SongInfo>(EMPTY_SONG);
+  const [isFading, setIsFading] = useState(false);
   const [waveConfig, setWaveConfig] = useState(() =>
     generateWaveConfig(WAVE_BARS),
   );
+  const trackKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
+    const applySong = (song: SongInfo) => {
+      const key = trackKey(song);
+
+      // Same track (or first paint): update in place, no fade needed.
+      if (trackKeyRef.current === null || trackKeyRef.current === key) {
+        trackKeyRef.current = key;
+        setDisplaySong(song);
+        return;
+      }
+
+      // Different track: fade out, swap content + wave pattern, fade in.
+      trackKeyRef.current = key;
+      setIsFading(true);
+      setTimeout(() => {
+        setDisplaySong(song);
+        setWaveConfig(generateWaveConfig(WAVE_BARS));
+        setIsFading(false);
+      }, FADE_MS);
+    };
+
     const poll = () => {
-      invoke<SongInfo>("check_music").then(setSong).catch(console.error);
+      invoke<SongInfo>("check_music").then(applySong).catch(console.error);
     };
     poll();
     const id = setInterval(poll, POLL_INTERVAL_MS);
     return () => clearInterval(id);
   }, []);
 
-  useEffect(() => {
-    setWaveConfig(generateWaveConfig(WAVE_BARS));
-  }, [song?.title]);
-
-  const title = song?.title ?? "No track playing";
-  const artist = song?.artist ?? "—";
-  const isPlaying = song?.isPlaying ?? false;
+  const hasTrack = displaySong.title !== "";
+  const title = hasTrack ? displaySong.title : "No track playing";
+  const artist = hasTrack ? displaySong.artist : "—";
+  const isPlaying = displaySong.isPlaying;
 
   return (
     <main className="card">
       <div className="content">
         <img src={coverPlaceholder} alt="Album cover" className="cover" />
-        <div className="info">
+        <div className={`info${isFading ? " fading" : ""}`}>
           <p className="title">{title}</p>
           <p className="artist">{artist}</p>
         </div>

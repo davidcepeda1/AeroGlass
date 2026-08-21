@@ -59,6 +59,12 @@ body,
   display: flex;
   flex-direction: column;
   gap: 2px;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.info.fading {
+  opacity: 0;
 }
 
 .title {

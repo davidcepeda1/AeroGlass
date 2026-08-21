@@ -162,10 +162,10 @@ el estándar de Linux para reproductores multimedia.
 
 **Objetivo:** que el cambio de canción no se sienta brusco.
 
-- [ ] Al pulsar prev/next: fade-out del título/artista, esperar a que termine la
+- [x] Al pulsar prev/next: fade-out del título/artista, esperar a que termine la
       transición (~300ms), pedir los datos nuevos, fade-in
-- [ ] Sincronizar la regeneración del patrón de barras con ese mismo cambio de pista
-- [ ] Revisar estados límite: sin música, pausado, sesión que desaparece a mitad de uso
+- [x] Sincronizar la regeneración del patrón de barras con ese mismo cambio de pista
+- [x] Revisar estados límite: sin música, pausado, sesión que desaparece a mitad de uso
 
 **Commit sugerido:** `polish: transiciones de fade al cambiar de canción`
 
