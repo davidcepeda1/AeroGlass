@@ -106,13 +106,13 @@ En `src-tauri/tauri.conf.json`, configura la ventana con:
 **Objetivo:** definir el contrato entre frontend y backend antes de implementar la
 lógica real de cada SO.
 
-- [ ] Definir un struct `SongInfo { title, artist, is_playing }` serializable (`serde`)
-- [ ] Crear dos comandos Tauri: uno para **leer** el estado actual (`check_music`) y
+- [x] Definir un struct `SongInfo { title, artist, is_playing }` serializable (`serde`)
+- [x] Crear dos comandos Tauri: uno para **leer** el estado actual (`check_music`) y
       otro para **enviar acciones** de control (`control_media`, con un parámetro de
       acción tipo `"play_pause" | "next" | "prev"`)
-- [ ] De momento, que devuelvan datos falsos/hardcodeados (para probar el `invoke`
+- [x] De momento, que devuelvan datos falsos/hardcodeados (para probar el `invoke`
       desde React sin depender aún de ninguna API del sistema)
-- [ ] Desde `App.tsx`, hacer `invoke("check_music")` en un `useEffect` con
+- [x] Desde `App.tsx`, hacer `invoke("check_music")` en un `useEffect` con
       `setInterval` (cada 1s) y pintar el resultado en pantalla
 
 **Commit sugerido:** `feat: comandos Tauri (check_music, control_media) con datos mock`
