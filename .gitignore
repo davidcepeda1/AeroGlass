@@ -28,3 +28,13 @@ Thumbs.db
 # Env
 .env
 .env.local
+
+# Claude Code skill installs (personal tooling, not project code)
+.claude/
+.agents/
+skills-lock.json
+
+# Impeccable design-skill working state (keep config.json + design.json,
+# they document real design-system decisions; ignore the rest)
+.impeccable/review/
+.impeccable/hook.cache.json
