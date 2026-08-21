@@ -17,8 +17,14 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.rs.bk
+
+# Env
+.env
+.env.local

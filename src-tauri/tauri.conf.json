@@ -13,8 +13,14 @@
     "windows": [
       {
         "title": "aeroglass",
-        "width": 800,
-        "height": 600
+        "width": 390,
+        "height": 110,
+        "resizable": false,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "shadow": false
       }
     ],
     "security": {

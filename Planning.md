@@ -46,8 +46,8 @@ En `src-tauri/tauri.conf.json`, configura la ventana con:
 - Oculta de la barra de tareas (`skipTaskbar: true`)
 - Sin sombra de sistema (`shadow: false`)
 
-- [ ] Aplicar estos flags en `tauri.conf.json`
-- [ ] Correr `npm run tauri dev` y confirmar que la ventana aparece sin bordes/título
+- [x] Aplicar estos flags en `tauri.conf.json`
+- [x] Correr `npm run tauri dev` y confirmar que la ventana aparece sin bordes/título
 
 **Commit sugerido:** `feat: configurar ventana flotante sin decoraciones`
 
