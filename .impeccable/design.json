@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-21T00:00:00Z",
+  "title": "Design System: AeroGlass",
+  "extensions": {
+    "colorMeta": {
+      "glass-base-black": {
+        "role": "primary",
+        "displayName": "Liquid Base Black",
+        "canonical": "rgba(0, 0, 0, 0.1)",
+        "tonalRamp": ["rgba(0,0,0,0.95)", "rgba(0,0,0,0.8)", "rgba(0,0,0,0.6)", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.25)", "rgba(0,0,0,0.15)", "rgba(0,0,0,0.1)", "rgba(0,0,0,0.05)"]
+      },
+      "liquid-shadow-black": {
+        "role": "primary",
+        "displayName": "Liquid Shadow Black",
+        "canonical": "rgba(0, 0, 0, 0.4)",
+        "tonalRamp": ["rgba(0,0,0,0.9)", "rgba(0,0,0,0.75)", "rgba(0,0,0,0.6)", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.3)", "rgba(0,0,0,0.2)", "rgba(0,0,0,0.1)", "rgba(0,0,0,0.05)"]
+      },
+      "liquid-light-low": {
+        "role": "primary",
+        "displayName": "Liquid Light Low",
+        "canonical": "rgba(255, 255, 255, 0.05)",
+        "tonalRamp": ["rgba(255,255,255,0.02)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0.08)", "rgba(255,255,255,0.12)", "rgba(255,255,255,0.2)", "rgba(255,255,255,0.35)", "rgba(255,255,255,0.55)", "rgba(255,255,255,0.8)"]
+      },
+      "liquid-light-high": {
+        "role": "primary",
+        "displayName": "Liquid Light High",
+        "canonical": "rgba(255, 255, 255, 0.15)",
+        "tonalRamp": ["rgba(255,255,255,0.02)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0.08)", "rgba(255,255,255,0.15)", "rgba(255,255,255,0.25)", "rgba(255,255,255,0.4)", "rgba(255,255,255,0.6)", "rgba(255,255,255,0.85)"]
+      },
+      "rim-top": {
+        "role": "neutral",
+        "displayName": "Rim Top",
+        "canonical": "rgba(255, 255, 255, 0.288)",
+        "tonalRamp": ["rgba(255,255,255,0.03)", "rgba(255,255,255,0.08)", "rgba(255,255,255,0.15)", "rgba(255,255,255,0.29)", "rgba(255,255,255,0.4)", "rgba(255,255,255,0.55)", "rgba(255,255,255,0.75)", "rgba(255,255,255,0.95)"]
+      },
+      "rim-bottom": {
+        "role": "neutral",
+        "displayName": "Rim Bottom",
+        "canonical": "rgba(255, 255, 255, 0.05)",
+        "tonalRamp": ["rgba(255,255,255,0.01)", "rgba(255,255,255,0.03)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0.09)", "rgba(255,255,255,0.15)", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.5)", "rgba(255,255,255,0.75)"]
+      },
+      "ink-white": {
+        "role": "neutral",
+        "displayName": "Ink White",
+        "canonical": "rgba(255, 255, 255, 0.95)",
+        "tonalRamp": ["rgba(255,255,255,0.1)", "rgba(255,255,255,0.25)", "rgba(255,255,255,0.4)", "rgba(255,255,255,0.55)", "rgba(255,255,255,0.7)", "rgba(255,255,255,0.85)", "rgba(255,255,255,0.95)", "rgba(255,255,255,1)"]
+      },
+      "ink-white-muted": {
+        "role": "neutral",
+        "displayName": "Ink White Muted",
+        "canonical": "rgba(255, 255, 255, 0.6)",
+        "tonalRamp": ["rgba(255,255,255,0.1)", "rgba(255,255,255,0.2)", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.4)", "rgba(255,255,255,0.5)", "rgba(255,255,255,0.6)", "rgba(255,255,255,0.75)", "rgba(255,255,255,0.9)"]
+      },
+      "control-white": {
+        "role": "neutral",
+        "displayName": "Control White",
+        "canonical": "rgba(255, 255, 255, 0.9)",
+        "tonalRamp": ["rgba(255,255,255,0.15)", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.45)", "rgba(255,255,255,0.6)", "rgba(255,255,255,0.75)", "rgba(255,255,255,0.85)", "rgba(255,255,255,0.9)", "rgba(255,255,255,1)"]
+      },
+      "control-white-dim": {
+        "role": "neutral",
+        "displayName": "Control White Dim",
+        "canonical": "rgba(255, 255, 255, 0.5)",
+        "tonalRamp": ["rgba(255,255,255,0.1)", "rgba(255,255,255,0.2)", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.4)", "rgba(255,255,255,0.5)", "rgba(255,255,255,0.65)", "rgba(255,255,255,0.8)", "rgba(255,255,255,0.95)"]
+      },
+      "frame-white-faint": {
+        "role": "neutral",
+        "displayName": "Frame White Faint",
+        "canonical": "rgba(255, 255, 255, 0.1)",
+        "tonalRamp": ["rgba(255,255,255,0.02)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0.08)", "rgba(255,255,255,0.1)", "rgba(255,255,255,0.18)", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.5)", "rgba(255,255,255,0.75)"]
+      },
+      "shadow-black": {
+        "role": "neutral",
+        "displayName": "Shadow Black",
+        "canonical": "rgba(0, 0, 0, 0.2)",
+        "tonalRamp": ["rgba(0,0,0,0.85)", "rgba(0,0,0,0.65)", "rgba(0,0,0,0.5)", "rgba(0,0,0,0.35)", "rgba(0,0,0,0.2)", "rgba(0,0,0,0.12)", "rgba(0,0,0,0.06)", "rgba(0,0,0,0.02)"]
+      }
+    },
+    "typographyMeta": {
+      "title": { "displayName": "Title", "purpose": "Track title, single line, hover-marquee + mask-edge fade, never wraps." },
+      "label": { "displayName": "Label", "purpose": "Artist line, single line, static ellipsis truncation, no marquee." }
+    },
+    "shadows": [
+      { "name": "liquid-inset-volume", "value": "inset 0 0 10px rgba(255,255,255,0.05)", "purpose": "Interior sheen on .card::before giving the liquid overlay layer volume." },
+      { "name": "cover-frame-drop", "value": "0 4px 12px rgba(0,0,0,0.2)", "purpose": "Lifts the 70x70px album-art tile off the card." },
+      { "name": "primary-button-rest", "value": "0 4px 12px rgba(0,0,0,0.3), inset 0 0 10px rgba(255,255,255,0.05)", "purpose": "Resting elevation + interior glass volume on the play/pause button." },
+      { "name": "primary-button-hover", "value": "0 8px 20px rgba(0,0,0,0.4), inset 0 0 12px rgba(255,255,255,0.1), 0 0 15px rgba(255,255,255,0.2)", "purpose": "Deepened shadow plus the system's only glow, neutral white, hover-only." },
+      { "name": "secondary-button-hover", "value": "0 0 10px rgba(255,255,255,0.1)", "purpose": "Faint white glow on prev/next hover reveal." },
+      { "name": "icon-drop", "value": "drop-shadow(0 2px 4px rgba(0,0,0,0.2))", "purpose": "Keeps every button icon legible against the glass regardless of desktop background." },
+      { "name": "title-text-shadow", "value": "0 2px 4px rgba(0,0,0,0.2)", "purpose": "Keeps the track title legible over arbitrary desktop wallpaper." }
+    ],
+    "motion": [
+      { "name": "button-transition", "value": "all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)", "purpose": "Default state transition for every button (hover/active)." },
+      { "name": "title-marquee", "value": "scroll-text 8s linear infinite", "purpose": "Hover-triggered horizontal scroll on the track title only; pauses/resets when not hovered." },
+      { "name": "wave-pulse", "value": "wave ease-in-out infinite (per-bar randomized duration/delay)", "purpose": "scaleY(0.5→1.5) + opacity(0.6→1) on each playback-indicator bar; freezes at rest values when paused." },
+      { "name": "track-fade-out", "value": "fadeOut 0.3s ease-out forwards", "purpose": "Opacity 1→0 + translateY(0→-5px) on .text-info when a track changes." },
+      { "name": "track-fade-in", "value": "fadeIn 0.3s ease-out forwards", "purpose": "Opacity 0→1 + translateY(5px→0) on .text-info after content/wave pattern swap." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Card (two-layer liquid glass)",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Fit-content rounded card, the base surface for the whole widget, built from a base fill plus a separately-blurred overlay pseudo-element.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-content\">Now Playing</div></div>",
+      "css": ".ds-card { position: relative; overflow: hidden; border-radius: 40px; min-width: 200px; max-width: 400px; width: fit-content; height: fit-content; padding: 12px 24px; box-sizing: border-box; background: rgba(0,0,0,0.1); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); } .ds-card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(190deg, rgba(0,0,0,0.4) 0%, rgba(255,255,255,0.05) 90%, rgba(255,255,255,0.15) 100%); backdrop-filter: blur(50px) saturate(200%) brightness(1.1); -webkit-backdrop-filter: blur(50px) saturate(200%) brightness(1.1); border-top: 1px solid rgba(255,255,255,0.288); border-bottom: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 0 10px rgba(255,255,255,0.05); pointer-events: none; } .ds-card-content { position: relative; z-index: 1; color: rgba(255,255,255,0.95); font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; }"
+    },
+    {
+      "name": "Primary Button (play/pause)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The only control with a button body: 46px translucent white glass circle, top-lit border, elevated shadow.",
+      "html": "<button class=\"ds-btn-primary\" aria-label=\"Play\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M8 5v14l11-7z\"/></svg></button>",
+      "css": ".ds-btn-primary { width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); border-top: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 12px rgba(0,0,0,0.3), inset 0 0 10px rgba(255,255,255,0.05); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); } .ds-btn-primary svg { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); margin-left: 2px; } .ds-btn-primary:hover { background: rgba(255,255,255,0.2); transform: scale(1.05) translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 0 12px rgba(255,255,255,0.1), 0 0 15px rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); } .ds-btn-primary:focus-visible { outline: 2px solid rgba(255,255,255,0.6); outline-offset: 2px; } .ds-btn-primary:active { transform: scale(0.95) translateY(0); background: rgba(255,255,255,0.15); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }"
+    },
+    {
+      "name": "Secondary Button (prev/next)",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "32px transparent, icon-only control; background and glow only appear on hover.",
+      "html": "<button class=\"ds-btn-secondary\" aria-label=\"Next\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z\"/></svg></button>",
+      "css": ".ds-btn-secondary { width: 32px; height: 32px; border-radius: 50%; border: none; background: transparent; color: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); } .ds-btn-secondary svg { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); } .ds-btn-secondary:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,1); transform: scale(1.1); box-shadow: 0 0 10px rgba(255,255,255,0.1); } .ds-btn-secondary:focus-visible { outline: 2px solid rgba(255,255,255,0.5); outline-offset: 2px; } .ds-btn-secondary:active { transform: scale(0.95); background: rgba(255,255,255,0.05); }"
+    },
+    {
+      "name": "Cover Art Frame",
+      "kind": "custom",
+      "refersTo": "cover-frame",
+      "description": "70x70px rounded album-art tile, a plain framed image with no glass overlay.",
+      "html": "<div class=\"ds-cover\"><img src=\"cover.jpg\" alt=\"Album cover\"/></div>",
+      "css": ".ds-cover { width: 70px; height: 70px; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); background-color: rgba(255,255,255,0.1); flex-shrink: 0; } .ds-cover img { display: block; width: 100%; height: 100%; object-fit: cover; }"
+    },
+    {
+      "name": "Track Title (marquee)",
+      "kind": "custom",
+      "refersTo": "title",
+      "description": "Single-line title with a mask-edge fade at rest and a hover-triggered horizontal scroll; the artist line below it never gets this treatment.",
+      "html": "<h1 class=\"ds-title\"><span>A Much Longer Track Title Than Fits</span></h1>",
+      "css": ".ds-title { font-size: 15px; font-weight: 600; letter-spacing: 0.3px; color: rgba(255,255,255,0.95); text-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; overflow: hidden; max-width: 100px; position: relative; margin: 0; mask-image: linear-gradient(90deg, transparent 0%, black 0%, black 90%, transparent 100%); } .ds-title span { display: inline-block; transition: transform 0.3s ease-out; } .ds-title:hover span { padding-right: 30px; animation: ds-scroll-text 8s linear infinite; } @keyframes ds-scroll-text { 0%, 2% { transform: translateX(0); } 50%, 65% { transform: translateX(calc(-110% + 150px)); } 100% { transform: translateX(0); } }"
+    },
+    {
+      "name": "Playback Indicator (wave bars)",
+      "kind": "custom",
+      "refersTo": "wave-container",
+      "description": "4-bar transform-driven playback indicator; freezes to a dim scaleY(0.5) state when paused, no glow.",
+      "html": "<div class=\"ds-wave\"><span class=\"ds-wave-bar\" style=\"animation-delay:0s;animation-duration:1.2s\"></span><span class=\"ds-wave-bar\" style=\"animation-delay:0.3s;animation-duration:1.4s\"></span><span class=\"ds-wave-bar\" style=\"animation-delay:0.1s;animation-duration:1.1s\"></span><span class=\"ds-wave-bar\" style=\"animation-delay:0.5s;animation-duration:1.3s\"></span></div>",
+      "css": ".ds-wave { display: flex; align-items: flex-end; height: 20px; gap: 3px; margin-top: 6px; } .ds-wave-bar { width: 10px; height: 4px; background: rgba(255,255,255,0.6); border-radius: 2px; transform-origin: bottom; animation-name: ds-wave; animation-timing-function: ease-in-out; animation-iteration-count: infinite; } .ds-wave.paused .ds-wave-bar { animation-play-state: paused; opacity: 0.6; transform: scaleY(0.5); } @keyframes ds-wave { 0%, 100% { transform: scaleY(0.5); opacity: 0.6; } 50% { transform: scaleY(1.5); opacity: 1; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Liquid Glass Pane",
+    "overview": "AeroGlass is a near-black, near-monochrome liquid glass widget, built to a user-supplied reference CSS file rather than an internally invented material. It rejects color as the source of identity: there is no accent hue anywhere in the system, only translucency, blur, and light/dark gradient tension across two stacked glass surfaces. The card itself is not a fixed-size stadium/pill — it is width: fit-content (200-400px) with a 40px rounded-rectangle corner, sizing to whatever title/artist text it holds rather than the reverse. Two earlier internally-generated directions — a blue-violet \"Aero Glass\" pane with SVG-lit gumdrop buttons, and a cyan-violet glowing dash-row indicator — were built, shown to the user, and explicitly rejected (\"no me convence\"); neither survives in the shipped code and neither is part of this system. The material reads as thickness, not flatness, through a deliberate two-layer construction: .card itself is a faint black glass base (rgba(0,0,0,0.1), blur(5px)), and .card::before is a second, separately-blurred liquid layer on top of it (blur(50px) saturate(200%) brightness(1.1)) carrying a 190deg dark-to-light gradient and asymmetric top/bottom borders. This double-blur stack, not a single translucent rectangle, is what makes the surface read as liquid glass rather than generic glassmorphism. This is a single-surface native Tauri desktop widget (460x170px window, no OS decorations, borderless, always-on-top, non-resizable), not a page or a component library serving multiple breakpoints.",
+    "keyCharacteristics": [
+      "Near-black, near-monochrome glass — no accent color anywhere in the system",
+      "Two stacked glass layers (.card base + .card::before liquid overlay) as the signature material technique",
+      "Card sizes to content (fit-content, 200-400px), not a fixed pill silhouette",
+      "Only the primary play/pause button has a button body; prev/next are bare, icon-only controls",
+      "Title gets a hover-triggered horizontal marquee with an edge-mask fade; the artist line never does",
+      "Playback indicator is 4 transform-scaled bars (no glow, no color, no height-based animation)",
+      "Track changes fade+slide via toggled fadeIn/fadeOut classes, not a plain opacity transition",
+      "Window dragging lives on .card, .icon-container, and .text-info — never on .controls"
+    ],
+    "rules": [
+      { "name": "The No-Accent Rule", "body": "No color in this system carries hue; every token is white or black at a chosen opacity. Identity comes from layering and blur, never from a saturated accent.", "section": "colors" },
+      { "name": "The Two-Layer Glass Rule", "body": "Every \"liquid glass\" surface in this system is built from two stacked layers with independent blur radii — a faint base fill (blur(5px)) and a separately-blurred gradient overlay (blur(50px) saturate(200%) brightness(1.1)) — never a single translucent rectangle with one blur value.", "section": "colors" },
+      { "name": "The Marquee-Is-Title-Only Rule", "body": "The hover-triggered horizontal scroll (h1:hover span, scroll-text 8s loop) and its mask-edge fade apply only to the title. The artist line always truncates statically.", "section": "typography" },
+      { "name": "The Neutral-Shadow Rule", "body": "Every shadow and glow in this system is black or white; nothing is tinted. A colored glow was part of the rejected Aero Glass world and does not belong here.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do build any new glass surface as two stacked layers with independently tuned blur values, matching .card/.card::before — never a single translucent rectangle.",
+      "Do size the card to its content (fit-content, bounded 200-400px) rather than forcing a fixed width or a stadium silhouette.",
+      "Do keep every shadow and glow neutral (black or white); never tint a shadow with color.",
+      "Do reserve the button body for the single primary action; keep prev/next transparent until hovered.",
+      "Do drive the playback indicator and any future \"live\" signal through transform/opacity, not box-shadow glow or color shift.",
+      "Do put data-tauri-drag-region only on non-interactive regions (.card, .icon-container, .text-info), never on .controls or its buttons."
+    ],
+    "donts": [
+      "Don't reintroduce color/hue as a source of identity — the blue-violet \"Aero Glass\" pane and its amber gumdrop buttons were explicitly rejected and are not part of this system.",
+      "Don't reintroduce a glowing colored dash-row or per-element box-shadow glow as a resting-state decoration — the cyan-violet dash indicator was rejected along with the rest of that world.",
+      "Don't apply the title's hover marquee treatment to the artist line or any other truncated text; it is a title-only behavior.",
+      "Don't design against a resizable-viewport assumption; this is a fixed 460x170px native window with no breakpoints."
+    ]
+  }
+}

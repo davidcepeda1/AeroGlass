@@ -8,6 +8,24 @@
         "value": "wave-bounce",
         "createdAt": "2026-08-21T03:52:05.455Z",
         "reason": "audio equalizer bar animation, uses ease-in-out timing (not an elastic/spring curve) — 'bounce' in the name just describes the literal up/down visualizer motion, domain-appropriate for a music widget"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(10, 10, 40, 0.4)",
+        "createdAt": "2026-08-21T19:38:57.806Z",
+        "reason": "neutral shadow/ink utility tone (box-shadow depth + text-shadow legibility), not a brand palette color — DESIGN.md's color section documents identity hues, not elevation/ink shadow values"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#4fd1ff",
+        "createdAt": "2026-08-21T20:01:01.855Z",
+        "reason": "user confirmed: explicitly asked to bring back the colored LED wave bars after the monochrome pass; now documented in DESIGN.md as the system's one deliberate hue exception"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#b18bfa",
+        "createdAt": "2026-08-21T20:01:01.924Z",
+        "reason": "user confirmed: explicitly asked to bring back the colored LED wave bars after the monochrome pass; now documented in DESIGN.md as the system's one deliberate hue exception"
       }
     ]
   }

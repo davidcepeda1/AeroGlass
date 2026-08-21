@@ -24,7 +24,9 @@ function trackKey(song: SongInfo) {
 
 function App() {
   const [displaySong, setDisplaySong] = useState<SongInfo>(EMPTY_SONG);
-  const [isFading, setIsFading] = useState(false);
+  const [fadeClass, setFadeClass] = useState<"fade-in" | "fade-out">(
+    "fade-in",
+  );
   const [waveConfig, setWaveConfig] = useState(() =>
     generateWaveConfig(WAVE_BARS),
   );
@@ -43,11 +45,11 @@ function App() {
 
       // Different track: fade out, swap content + wave pattern, fade in.
       trackKeyRef.current = key;
-      setIsFading(true);
+      setFadeClass("fade-out");
       setTimeout(() => {
         setDisplaySong(song);
         setWaveConfig(generateWaveConfig(WAVE_BARS));
-        setIsFading(false);
+        setFadeClass("fade-in");
       }, FADE_MS);
     };
 
@@ -65,42 +67,51 @@ function App() {
   const isPlaying = displaySong.isPlaying;
 
   return (
-    <main className="card">
-      <div className="content">
-        <img src={coverPlaceholder} alt="Album cover" className="cover" />
-        <div className={`info${isFading ? " fading" : ""}`}>
-          <p className="title">{title}</p>
-          <p className="artist">{artist}</p>
+    <main className="card" data-tauri-drag-region>
+      <div className="content" data-tauri-drag-region>
+        <div className="icon-container" data-tauri-drag-region>
+          <img
+            src={coverPlaceholder}
+            alt="Album cover"
+            data-tauri-drag-region
+          />
         </div>
-        <WaveAnimation bars={waveConfig} isPlaying={isPlaying} />
-      </div>
 
-      <div className="controls">
-        <button
-          className="control control-secondary"
-          aria-label="Previous"
-          onClick={() => invoke("control_media", { action: "prev" })}
-        >
-          <SkipBack size={16} fill="currentColor" />
-        </button>
-        <button
-          className="control control-primary"
-          aria-label={isPlaying ? "Pause" : "Play"}
-          onClick={() => invoke("control_media", { action: "play_pause" })}
-        >
-          {isPlaying ? (
-            <Pause size={18} fill="currentColor" />
-          ) : (
-            <Play size={18} fill="currentColor" />
-          )}
-        </button>
-        <button
-          className="control control-secondary"
-          aria-label="Next"
-          onClick={() => invoke("control_media", { action: "next" })}
-        >
-          <SkipForward size={16} fill="currentColor" />
-        </button>
+        <div className={`text-info ${fadeClass}`} data-tauri-drag-region>
+          <h1 data-tauri-drag-region>
+            <span data-tauri-drag-region>{title}</span>
+          </h1>
+          <p data-tauri-drag-region>{artist}</p>
+          <WaveAnimation bars={waveConfig} isPlaying={isPlaying} />
+        </div>
+
+        <div className="controls">
+          <button
+            className="btn-secondary"
+            aria-label="Previous"
+            onClick={() => invoke("control_media", { action: "prev" })}
+          >
+            <SkipBack size={16} fill="currentColor" />
+          </button>
+          <button
+            className="btn-primary"
+            aria-label={isPlaying ? "Pause" : "Play"}
+            onClick={() => invoke("control_media", { action: "play_pause" })}
+          >
+            {isPlaying ? (
+              <Pause size={18} fill="currentColor" />
+            ) : (
+              <Play size={18} fill="currentColor" />
+            )}
+          </button>
+          <button
+            className="btn-secondary"
+            aria-label="Next"
+            onClick={() => invoke("control_media", { action: "next" })}
+          >
+            <SkipForward size={16} fill="currentColor" />
+          </button>
+        </div>
       </div>
     </main>
   );

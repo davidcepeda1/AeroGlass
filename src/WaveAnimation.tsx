@@ -1,6 +1,5 @@
 import type { CSSProperties } from "react";
 import type { WaveBar } from "./lib/wave";
-import "./WaveAnimation.css";
 
 interface WaveAnimationProps {
   bars: WaveBar[];
@@ -9,14 +8,16 @@ interface WaveAnimationProps {
 
 function WaveAnimation({ bars, isPlaying }: WaveAnimationProps) {
   return (
-    <div className={`wave${isPlaying ? "" : " paused"}`}>
+    <div
+      className={`wave-container${isPlaying ? "" : " paused"}`}
+      data-tauri-drag-region
+    >
       {bars.map((bar, i) => (
         <span
           key={i}
           className="wave-bar"
           style={
             {
-              "--peak": `${bar.peak}%`,
               animationDelay: `${bar.delay}s`,
               animationDuration: `${bar.duration}s`,
             } as CSSProperties
