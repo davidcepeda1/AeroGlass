@@ -57,15 +57,15 @@ En `src-tauri/tauri.conf.json`, configura la ventana con:
 
 **Objetivo:** el "card" de vidrio con layout: portada + info de canción + controles.
 
-- [ ] Crear el layout base en `App.tsx`: un contenedor `.card` con dos bloques:
+- [x] Crear el layout base en `App.tsx`: un contenedor `.card` con dos bloques:
       `.content` (portada + texto) y `.controls` (botones)
-- [ ] Escribir el CSS del efecto glass en `App.css`:
+- [x] Escribir el CSS del efecto glass en `App.css`:
   - `backdrop-filter: blur(...)`
   - fondo semitransparente (`rgba(...)`)
   - bordes redondeados y un borde sutil (`border: 1px solid rgba(255,255,255,0.1)` es un
     punto de partida típico)
-- [ ] Usar una imagen placeholder para la portada mientras no hay datos reales
-- [ ] Verificar visualmente que el widget ya se ve "de vidrio" sobre el escritorio
+- [x] Usar una imagen placeholder para la portada mientras no hay datos reales
+- [x] Verificar visualmente que el widget ya se ve "de vidrio" sobre el escritorio
 
 **Commit sugerido:** `feat: layout base y estilos glassmorphism del widget`
 
