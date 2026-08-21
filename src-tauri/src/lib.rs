@@ -1,38 +1,15 @@
-use serde::{Deserialize, Serialize};
+mod media;
 
-#[derive(Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
-struct SongInfo {
-    title: String,
-    artist: String,
-    is_playing: bool,
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "snake_case")]
-enum MediaAction {
-    PlayPause,
-    Next,
-    Prev,
-}
+use media::{MediaAction, SongInfo};
 
 #[tauri::command]
 fn check_music() -> SongInfo {
-    SongInfo {
-        title: "Mock Song".into(),
-        artist: "Mock Artist".into(),
-        is_playing: true,
-    }
+    media::get_song_info()
 }
 
 #[tauri::command]
 fn control_media(action: MediaAction) {
-    let label = match action {
-        MediaAction::PlayPause => "play_pause",
-        MediaAction::Next => "next",
-        MediaAction::Prev => "prev",
-    };
-    println!("control_media: {label}");
+    media::send_control(action);
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

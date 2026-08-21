@@ -123,15 +123,15 @@ lógica real de cada SO.
 
 **Objetivo:** conectar `check_music` / `control_media` a la música real de Windows.
 
-- [ ] Agregar el crate `windows` (con las features `Media_Control` y `Foundation`) como
+- [x] Agregar el crate `windows` (con las features `Media_Control` y `Foundation`) como
       dependencia **condicional** (`[target.'cfg(target_os = "windows")'.dependencies]`)
       en `Cargo.toml`
-- [ ] Investigar `GlobalSystemMediaTransportControlsSessionManager` para obtener la
+- [x] Investigar `GlobalSystemMediaTransportControlsSessionManager` para obtener la
       sesión activa
-- [ ] Leer título, artista y estado de reproducción desde esa sesión
-- [ ] Implementar los tres controles (play/pause, next, prev) usando los métodos
+- [x] Leer título, artista y estado de reproducción desde esa sesión
+- [x] Implementar los tres controles (play/pause, next, prev) usando los métodos
       `TryTogglePlayPauseAsync`, `TrySkipNextAsync`, `TrySkipPreviousAsync`
-- [ ] Manejar el caso "no hay sesión activa" devolviendo un estado neutro en vez de
+- [x] Manejar el caso "no hay sesión activa" devolviendo un estado neutro en vez de
       error (para que la UI no se rompa)
 
 **Commit sugerido:** `feat: integración con Windows Media Session API`
@@ -143,14 +143,14 @@ lógica real de cada SO.
 **Objetivo:** el mismo contrato (`SongInfo`, control de acciones) pero implementado con
 el estándar de Linux para reproductores multimedia.
 
-- [ ] Agregar el crate `mpris` como dependencia condicional para `target_os = "linux"`
+- [x] Agregar el crate `mpris` como dependencia condicional para `target_os = "linux"`
       (requiere `libdbus-1-dev` y `pkg-config` instalados en el sistema para compilar)
-- [ ] Usar `PlayerFinder` para encontrar el reproductor activo (el que está sonando, o
+- [x] Usar `PlayerFinder` para encontrar el reproductor activo (el que está sonando, o
       el primero disponible si ninguno lo está)
-- [ ] Mapear metadata de MPRIS (`title`, `artists`) a tu struct `SongInfo`
-- [ ] Implementar los controles usando los métodos del player (`play_pause`, `next`,
+- [x] Mapear metadata de MPRIS (`title`, `artists`) a tu struct `SongInfo`
+- [x] Implementar los controles usando los métodos del player (`play_pause`, `next`,
       `previous`)
-- [ ] Estructurar el código para que Windows y Linux vivan en módulos separados
+- [x] Estructurar el código para que Windows y Linux vivan en módulos separados
       (por ejemplo `media/windows.rs` y `media/linux.rs`) detrás de una misma interfaz,
       seleccionada por `#[cfg(target_os = "...")]`
 
