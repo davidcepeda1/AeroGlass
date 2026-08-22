@@ -8,8 +8,11 @@ import { generateWaveConfig } from "./lib/wave";
 import "./App.css";
 
 const WAVE_BARS = 4;
-const POLL_INTERVAL_MS = 1000;
 const FADE_MS = 300;
+// Safety net only: MPRIS/WinRT push updates instantly, but not every player
+// implements the change signals reliably, so poll slowly in the background
+// too, just so the widget can never go stale forever.
+const FALLBACK_POLL_INTERVAL_MS = 10_000;
 // If no "audio-levels" event arrives for this long, treat the system audio
 // capture as unavailable/stalled and fall back to the decorative animation.
 const AUDIO_LEVELS_TIMEOUT_MS = 1500;
@@ -83,12 +86,26 @@ function App() {
       }, FADE_MS);
     };
 
-    const poll = () => {
+    const fetchNow = () => {
       invoke<SongInfo>("check_music").then(applySong).catch(console.error);
     };
-    poll();
-    const id = setInterval(poll, POLL_INTERVAL_MS);
-    return () => clearInterval(id);
+
+    // Real-time updates: the backend pushes this the instant MPRIS (Linux)
+    // or WinRT (Windows) reports a change, instead of us polling on a timer.
+    const unlisten = listen<SongInfo>("song-changed", (event) => {
+      applySong(event.payload);
+    });
+
+    // First paint can't rely on an event that may fire before this listener
+    // is even attached, so fetch the current state once immediately too.
+    fetchNow();
+
+    const fallback = setInterval(fetchNow, FALLBACK_POLL_INTERVAL_MS);
+
+    return () => {
+      unlisten.then((fn) => fn());
+      clearInterval(fallback);
+    };
   }, []);
 
   const hasTrack = displaySong.title !== "";
