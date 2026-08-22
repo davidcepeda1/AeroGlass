@@ -36,8 +36,12 @@ pub enum MediaAction {
 mod windows;
 #[cfg(target_os = "windows")]
 pub use windows::{get_song_info, send_control};
+/// Real WinRT session-event push (MediaPropertiesChanged/PlaybackInfoChanged)
+/// lands in a follow-up commit.
+#[cfg(target_os = "windows")]
+pub fn watch_song_changes(_app: tauri::AppHandle) {}
 
 #[cfg(target_os = "linux")]
 mod linux;
 #[cfg(target_os = "linux")]
-pub use linux::{get_song_info, send_control};
+pub use linux::{get_song_info, send_control, watch_song_changes};

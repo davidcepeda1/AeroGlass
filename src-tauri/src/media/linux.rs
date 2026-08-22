@@ -1,6 +1,7 @@
 use super::{MediaAction, SongInfo};
 use base64::{engine::general_purpose::STANDARD, Engine};
-use mpris::{PlaybackStatus, Player, PlayerFinder};
+use mpris::{Event, PlaybackStatus, Player, PlayerFinder};
+use tauri::{AppHandle, Emitter};
 
 fn active_player() -> Option<Player> {
     let finder = PlayerFinder::new().ok()?;
@@ -67,6 +68,50 @@ pub fn get_song_info() -> SongInfo {
         is_playing,
         cover_art,
     }
+}
+
+/// Pushes a `song-changed` event with the fresh `SongInfo` every time MPRIS
+/// reports something relevant, instead of making the frontend poll on a
+/// timer. Runs for the lifetime of the app, reconnecting if the player
+/// disappears (quits, or never started) so a player opened later is picked
+/// up without restarting the widget.
+pub fn watch_song_changes(app: AppHandle) {
+    std::thread::spawn(move || loop {
+        if let Err(err) = watch_once(&app) {
+            eprintln!("aeroglass: MPRIS event stream ended ({err}), retrying");
+        }
+        std::thread::sleep(std::time::Duration::from_secs(2));
+    });
+}
+
+fn watch_once(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+    let player = active_player().ok_or("no active MPRIS player")?;
+    let events = player.events()?;
+
+    // Push current state immediately so the frontend doesn't sit on stale
+    // data until the next actual change.
+    let _ = app.emit("song-changed", get_song_info());
+
+    for event in events {
+        let event = event?;
+
+        let relevant = matches!(
+            event,
+            Event::TrackChanged(_)
+                | Event::Playing
+                | Event::Paused
+                | Event::Stopped
+                | Event::PlayerShutDown
+        );
+        if relevant {
+            let _ = app.emit("song-changed", get_song_info());
+        }
+        if matches!(event, Event::PlayerShutDown) {
+            break;
+        }
+    }
+
+    Ok(())
 }
 
 pub fn send_control(action: MediaAction) {

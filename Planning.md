@@ -187,8 +187,11 @@ el estándar de Linux para reproductores multimedia.
 ## Ideas para diferenciarlo más del original (opcional, después de la Fase 9)
 
 - [x] Carátula del álbum real (MPRIS y Windows Media Session exponen el thumbnail)
-- [ ] Reemplazar el polling por eventos (`MediaPropertiesChanged` en Windows,
-      señales de D-Bus en Linux) en vez de preguntar cada segundo
+- [ ] Reemplazar el polling por eventos en vez de preguntar cada segundo:
+  - [x] Linux: `player.events()` de `mpris` (señales D-Bus internamente), emite
+        `song-changed` — verificado en vivo pausando/reanudando por D-Bus
+  - [ ] Windows: `MediaPropertiesChanged`/`PlaybackInfoChanged` de WinRT
+  - [ ] Frontend: escuchar `song-changed` en vez de `setInterval` cada 1s
 - [ ] Barra de progreso / tiempo transcurrido de la canción
 - [ ] Selector de sesión cuando hay varias apps reproduciendo a la vez
 - [x] Bandeja del sistema con menú (mostrar/ocultar, prev/play-pause/next,
