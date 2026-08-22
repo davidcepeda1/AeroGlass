@@ -1,5 +1,7 @@
 use super::{MediaAction, SongInfo};
 use base64::{engine::general_purpose::STANDARD, Engine};
+use tauri::{AppHandle, Emitter};
+use windows::Foundation::TypedEventHandler;
 use windows::Media::Control::{
     GlobalSystemMediaTransportControlsSession,
     GlobalSystemMediaTransportControlsSessionManager,
@@ -80,6 +82,64 @@ pub fn get_song_info() -> SongInfo {
         artist,
         is_playing,
         cover_art,
+    }
+}
+
+/// Pushes a `song-changed` event with fresh `SongInfo` whenever WinRT
+/// reports something relevant, instead of making the frontend poll on a
+/// timer: `MediaPropertiesChanged`/`PlaybackInfoChanged` on the current
+/// session, and `CurrentSessionChanged` on the manager itself (re-subscribes
+/// to whichever session becomes active, e.g. switching from Spotify to a
+/// browser tab).
+pub fn watch_song_changes(app: AppHandle) {
+    std::thread::spawn(move || {
+        if let Err(err) = run(app) {
+            eprintln!("aeroglass: WinRT session events unavailable ({err:?})");
+        }
+    });
+}
+
+fn subscribe_session(
+    session: &GlobalSystemMediaTransportControlsSession,
+    app: AppHandle,
+) -> windows::core::Result<()> {
+    let app_props = app.clone();
+    session.MediaPropertiesChanged(&TypedEventHandler::new(move |_, _| {
+        let _ = app_props.emit("song-changed", get_song_info());
+        Ok(())
+    }))?;
+
+    session.PlaybackInfoChanged(&TypedEventHandler::new(move |_, _| {
+        let _ = app.emit("song-changed", get_song_info());
+        Ok(())
+    }))?;
+
+    Ok(())
+}
+
+fn run(app: AppHandle) -> windows::core::Result<()> {
+    let manager = GlobalSystemMediaTransportControlsSessionManager::RequestAsync()?.join()?;
+
+    if let Ok(session) = manager.GetCurrentSession() {
+        let _ = subscribe_session(&session, app.clone());
+    }
+    // Push current state immediately so the frontend doesn't sit on stale
+    // data until the next actual change.
+    let _ = app.emit("song-changed", get_song_info());
+
+    let manager_for_change = manager.clone();
+    let app_for_change = app.clone();
+    manager.CurrentSessionChanged(&TypedEventHandler::new(move |_, _| {
+        if let Ok(session) = manager_for_change.GetCurrentSession() {
+            let _ = subscribe_session(&session, app_for_change.clone());
+        }
+        let _ = app_for_change.emit("song-changed", get_song_info());
+        Ok(())
+    }))?;
+
+    // Keep the manager (and therefore its event registrations) alive.
+    loop {
+        std::thread::sleep(std::time::Duration::from_secs(3600));
     }
 }
 
