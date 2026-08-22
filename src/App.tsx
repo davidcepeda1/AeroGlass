@@ -3,11 +3,10 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import coverPlaceholder from "./assets/cover-placeholder.svg";
-import WaveAnimation from "./WaveAnimation";
-import { generateWaveConfig } from "./lib/wave";
+import EqualizerBars from "./EqualizerBars";
 import "./App.css";
 
-const WAVE_BARS = 4;
+const WAVE_BARS = 12;
 const FADE_MS = 300;
 // Safety net only: MPRIS/WinRT push updates instantly, but not every player
 // implements the change signals reliably, so poll slowly in the background
@@ -16,6 +15,7 @@ const FALLBACK_POLL_INTERVAL_MS = 10_000;
 // If no "audio-levels" event arrives for this long, treat the system audio
 // capture as unavailable/stalled and fall back to the decorative animation.
 const AUDIO_LEVELS_TIMEOUT_MS = 1500;
+const DECORATIVE_TICK_MS = 140;
 
 interface SongInfo {
   title: string;
@@ -35,15 +35,19 @@ function trackKey(song: SongInfo) {
   return `${song.title}|${song.artist}`;
 }
 
+function randomLevels(count: number) {
+  return Array.from({ length: count }, () => 0.15 + Math.random() * 0.75);
+}
+
 function App() {
   const [displaySong, setDisplaySong] = useState<SongInfo>(EMPTY_SONG);
   const [fadeClass, setFadeClass] = useState<"fade-in" | "fade-out">(
     "fade-in",
   );
-  const [waveConfig, setWaveConfig] = useState(() =>
-    generateWaveConfig(WAVE_BARS),
-  );
   const [audioLevels, setAudioLevels] = useState<number[] | null>(null);
+  const [decorativeLevels, setDecorativeLevels] = useState(() =>
+    randomLevels(WAVE_BARS),
+  );
   const lastLevelsAtRef = useRef(0);
   const trackKeyRef = useRef<string | null>(null);
 
@@ -65,6 +69,16 @@ function App() {
     };
   }, []);
 
+  // Decorative fallback: only runs while there's no real audio-levels feed,
+  // so the equalizer still moves instead of sitting frozen/empty.
+  useEffect(() => {
+    if (audioLevels !== null) return;
+    const id = setInterval(() => {
+      setDecorativeLevels(randomLevels(WAVE_BARS));
+    }, DECORATIVE_TICK_MS);
+    return () => clearInterval(id);
+  }, [audioLevels]);
+
   useEffect(() => {
     const applySong = (song: SongInfo) => {
       const key = trackKey(song);
@@ -76,12 +90,11 @@ function App() {
         return;
       }
 
-      // Different track: fade out, swap content + wave pattern, fade in.
+      // Different track: fade out, swap content, fade in.
       trackKeyRef.current = key;
       setFadeClass("fade-out");
       setTimeout(() => {
         setDisplaySong(song);
-        setWaveConfig(generateWaveConfig(WAVE_BARS));
         setFadeClass("fade-in");
       }, FADE_MS);
     };
@@ -112,6 +125,7 @@ function App() {
   const title = hasTrack ? displaySong.title : "No track playing";
   const artist = hasTrack ? displaySong.artist : "—";
   const isPlaying = displaySong.isPlaying;
+  const eqLevels = audioLevels ?? decorativeLevels;
 
   return (
     <main className="card" data-tauri-drag-region>
@@ -129,11 +143,7 @@ function App() {
             <span data-tauri-drag-region>{title}</span>
           </h1>
           <p data-tauri-drag-region>{artist}</p>
-          <WaveAnimation
-            bars={waveConfig}
-            isPlaying={isPlaying}
-            levels={audioLevels}
-          />
+          <EqualizerBars levels={eqLevels} isPlaying={isPlaying} />
         </div>
 
         <div className="controls">

@@ -26,6 +26,21 @@
         "value": "#b18bfa",
         "createdAt": "2026-08-21T20:01:01.924Z",
         "reason": "user confirmed: explicitly asked to bring back the colored LED wave bars after the monochrome pass; now documented in DESIGN.md as the system's one deliberate hue exception"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "0.5px",
+        "files": [
+          "src/App.css"
+        ],
+        "createdAt": "2026-08-22T23:12:55.514Z",
+        "reason": "graphic-equalizer LED segments/peak marker, deliberately near-flat corners for a tiny 2px-tall cell"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#7cff8c",
+        "createdAt": "2026-08-22T23:12:55.559Z",
+        "reason": "user confirmed: classic graphic-EQ peak-hold indicator color (bright green), matching the user-supplied reference image docs/barra.png"
       }
     ]
   }

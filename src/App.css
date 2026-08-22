@@ -186,60 +186,66 @@ p {
 }
 
 /* =========================
-   Animación de barras de audio (wave)
+   Ecualizador gráfico segmentado (estilo Winamp/iTunes clásico)
    ========================= */
-.wave-container {
+.eq {
   display: flex;
   align-items: flex-end;
+  gap: 2px;
   height: 20px;
-  gap: 3px;
-  margin-top: 6px;
+  margin-top: 3px;
+  flex-shrink: 0;
 }
 
-.wave-bar {
-  width: 10px;
-  height: 4px;
-  background: linear-gradient(to top, #4fd1ff, #b18bfa);
-  box-shadow:
-    0 0 4px rgba(120, 190, 255, 0.85),
-    0 0 7px rgba(150, 120, 255, 0.5);
-  border-radius: 2px;
-  animation-name: wave;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  transform-origin: bottom;
-  transition: box-shadow 0.2s ease;
+.eq-bar {
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 1px;
+  width: 6px;
+  /* Deja que el marcador de pico se recorte al deslizarse por debajo de la
+     columna, en vez de quedarse fijo en la fila 0 — siempre está en
+     movimiento, nunca "muerto". */
+  overflow: hidden;
 }
 
-/* Estado pausado de la animación cuando la música no está reproduciendo */
-.wave-container.paused .wave-bar {
-  animation-play-state: paused;
-  opacity: 0.6;
-  transform: scaleY(0.5);
+.eq-seg {
+  width: 100%;
+  height: 2px;
+  border-radius: 0.5px;
+  background: rgba(255, 255, 255, 0.07);
+  transition:
+    background 0.06s linear,
+    box-shadow 0.06s linear;
+}
+
+.eq-seg.lit {
+  background: var(--seg-color);
+  box-shadow: 0 0 3px var(--seg-color);
+}
+
+/* Indicador de pico: sube al instante con la señal y luego cae solo,
+   separado de la barra encendida — el clásico "peak hold" de un VU meter. */
+.eq-peak {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  border-radius: 0.5px;
+  background: #7cff8c;
+  box-shadow: 0 0 4px #7cff8c;
+  bottom: calc(var(--peak-row, 0) * 3px + 2px);
+  opacity: 0.9;
+  transition: bottom 0.05s linear;
+}
+
+.eq.eq-paused .eq-seg.lit {
+  background: rgba(255, 255, 255, 0.07);
   box-shadow: none;
 }
 
-/* Modo "live": los niveles reales del audio del sistema controlan cada
-   barra por JS (transform/opacity/box-shadow inline) — se apaga la
-   animación CSS decorativa para no pelear con esos valores. */
-.wave-container.live .wave-bar {
-  animation-name: none;
-  transition:
-    transform 0.08s linear,
-    opacity 0.08s linear,
-    box-shadow 0.08s linear;
-}
-
-@keyframes wave {
-  0%,
-  100% {
-    transform: scaleY(0.5);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scaleY(1.5);
-    opacity: 1;
-  }
+.eq.eq-paused .eq-peak {
+  opacity: 0;
 }
 
 /* =========================

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-21T00:00:00Z",
+  "generatedAt": "2026-08-22T00:00:00Z",
   "title": "Design System: AeroGlass",
   "extensions": {
     "colorMeta": {
@@ -75,6 +75,30 @@
         "displayName": "Shadow Black",
         "canonical": "rgba(0, 0, 0, 0.2)",
         "tonalRamp": ["rgba(0,0,0,0.85)", "rgba(0,0,0,0.65)", "rgba(0,0,0,0.5)", "rgba(0,0,0,0.35)", "rgba(0,0,0,0.2)", "rgba(0,0,0,0.12)", "rgba(0,0,0,0.06)", "rgba(0,0,0,0.02)"]
+      },
+      "eq-blue": {
+        "role": "accent",
+        "displayName": "Equalizer Blue",
+        "canonical": "#2f6bff",
+        "tonalRamp": ["#0a1a4d", "#123180", "#1a48b3", "#215fe6", "#2f6bff", "#5c8bff", "#8caeff", "#c3d5ff"]
+      },
+      "eq-cyan": {
+        "role": "accent",
+        "displayName": "Equalizer Cyan",
+        "canonical": "#22c7c0",
+        "tonalRamp": ["#0a3d3a", "#0f5450", "#146b66", "#1a9188", "#22c7c0", "#57d8d1", "#8ee7e2", "#c6f5f2"]
+      },
+      "eq-green": {
+        "role": "accent",
+        "displayName": "Equalizer Green",
+        "canonical": "#3ee85a",
+        "tonalRamp": ["#0f4d1c", "#166b28", "#1c8c34", "#28b344", "#3ee85a", "#6ef085", "#a3f6b4", "#d4fbdd"]
+      },
+      "eq-peak-green": {
+        "role": "accent",
+        "displayName": "Equalizer Peak Green",
+        "canonical": "#7cff8c",
+        "tonalRamp": ["#154d1f", "#1e6b2c", "#288c3a", "#3fb352", "#7cff8c", "#9dffa8", "#c1ffc9", "#e2ffe6"]
       }
     },
     "typographyMeta": {
@@ -85,17 +109,21 @@
       { "name": "liquid-inset-volume", "value": "inset 0 0 10px rgba(255,255,255,0.05)", "purpose": "Interior sheen on .card::before giving the liquid overlay layer volume." },
       { "name": "cover-frame-drop", "value": "0 4px 12px rgba(0,0,0,0.2)", "purpose": "Lifts the 70x70px album-art tile off the card." },
       { "name": "primary-button-rest", "value": "0 4px 12px rgba(0,0,0,0.3), inset 0 0 10px rgba(255,255,255,0.05)", "purpose": "Resting elevation + interior glass volume on the play/pause button." },
-      { "name": "primary-button-hover", "value": "0 8px 20px rgba(0,0,0,0.4), inset 0 0 12px rgba(255,255,255,0.1), 0 0 15px rgba(255,255,255,0.2)", "purpose": "Deepened shadow plus the system's only glow, neutral white, hover-only." },
+      { "name": "primary-button-hover", "value": "0 8px 20px rgba(0,0,0,0.4), inset 0 0 12px rgba(255,255,255,0.1), 0 0 15px rgba(255,255,255,0.2)", "purpose": "Deepened shadow plus the system's only neutral glow, hover-only." },
       { "name": "secondary-button-hover", "value": "0 0 10px rgba(255,255,255,0.1)", "purpose": "Faint white glow on prev/next hover reveal." },
       { "name": "icon-drop", "value": "drop-shadow(0 2px 4px rgba(0,0,0,0.2))", "purpose": "Keeps every button icon legible against the glass regardless of desktop background." },
-      { "name": "title-text-shadow", "value": "0 2px 4px rgba(0,0,0,0.2)", "purpose": "Keeps the track title legible over arbitrary desktop wallpaper." }
+      { "name": "title-text-shadow", "value": "0 2px 4px rgba(0,0,0,0.2)", "purpose": "Keeps the track title legible over arbitrary desktop wallpaper." },
+      { "name": "eq-segment-glow", "value": "0 0 3px var(--seg-color)", "purpose": "Self-colored glow on each lit equalizer LED segment; scoped exception to the Neutral-Shadow Rule." },
+      { "name": "eq-peak-glow", "value": "0 0 4px #7cff8c", "purpose": "Glow on the peak-hold marker line, distinguishing it from the lit column beneath it." }
     ],
     "motion": [
       { "name": "button-transition", "value": "all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)", "purpose": "Default state transition for every button (hover/active)." },
       { "name": "title-marquee", "value": "scroll-text 8s linear infinite", "purpose": "Hover-triggered horizontal scroll on the track title only; pauses/resets when not hovered." },
-      { "name": "wave-pulse", "value": "wave ease-in-out infinite (per-bar randomized duration/delay)", "purpose": "scaleY(0.5→1.5) + opacity(0.6→1) on each playback-indicator bar; freezes at rest values when paused." },
       { "name": "track-fade-out", "value": "fadeOut 0.3s ease-out forwards", "purpose": "Opacity 1→0 + translateY(0→-5px) on .text-info when a track changes." },
-      { "name": "track-fade-in", "value": "fadeIn 0.3s ease-out forwards", "purpose": "Opacity 0→1 + translateY(5px→0) on .text-info after content/wave pattern swap." }
+      { "name": "track-fade-in", "value": "fadeIn 0.3s ease-out forwards", "purpose": "Opacity 0→1 + translateY(5px→0) on .text-info after content swap." },
+      { "name": "eq-segment-transition", "value": "background 0.06s linear, box-shadow 0.06s linear", "purpose": "Fast crossfade as each LED segment lights/dims with incoming levels." },
+      { "name": "eq-peak-decay", "value": "setInterval, 60ms tick, -0.05 per tick, clamped to current level and to the top segment row", "purpose": "Single authoritative peak-hold decay clock; deliberately not a per-render effect (see Single-Clock Peak Rule)." },
+      { "name": "eq-peak-transition", "value": "bottom 0.1s linear", "purpose": "Smooths the peak marker's position change between decay ticks." }
     ]
   },
   "components": [
@@ -140,44 +168,48 @@
       "css": ".ds-title { font-size: 15px; font-weight: 600; letter-spacing: 0.3px; color: rgba(255,255,255,0.95); text-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; overflow: hidden; max-width: 100px; position: relative; margin: 0; mask-image: linear-gradient(90deg, transparent 0%, black 0%, black 90%, transparent 100%); } .ds-title span { display: inline-block; transition: transform 0.3s ease-out; } .ds-title:hover span { padding-right: 30px; animation: ds-scroll-text 8s linear infinite; } @keyframes ds-scroll-text { 0%, 2% { transform: translateX(0); } 50%, 65% { transform: translateX(calc(-110% + 150px)); } 100% { transform: translateX(0); } }"
     },
     {
-      "name": "Playback Indicator (wave bars)",
+      "name": "Playback Indicator (segmented equalizer)",
       "kind": "custom",
-      "refersTo": "wave-container",
-      "description": "4-bar transform-driven playback indicator; freezes to a dim scaleY(0.5) state when paused, no glow.",
-      "html": "<div class=\"ds-wave\"><span class=\"ds-wave-bar\" style=\"animation-delay:0s;animation-duration:1.2s\"></span><span class=\"ds-wave-bar\" style=\"animation-delay:0.3s;animation-duration:1.4s\"></span><span class=\"ds-wave-bar\" style=\"animation-delay:0.1s;animation-duration:1.1s\"></span><span class=\"ds-wave-bar\" style=\"animation-delay:0.5s;animation-duration:1.3s\"></span></div>",
-      "css": ".ds-wave { display: flex; align-items: flex-end; height: 20px; gap: 3px; margin-top: 6px; } .ds-wave-bar { width: 10px; height: 4px; background: rgba(255,255,255,0.6); border-radius: 2px; transform-origin: bottom; animation-name: ds-wave; animation-timing-function: ease-in-out; animation-iteration-count: infinite; } .ds-wave.paused .ds-wave-bar { animation-play-state: paused; opacity: 0.6; transform: scaleY(0.5); } @keyframes ds-wave { 0%, 100% { transform: scaleY(0.5); opacity: 0.6; } 50% { transform: scaleY(1.5); opacity: 1; } }"
+      "refersTo": "eq",
+      "description": "12-bar, 6-segment-per-bar graphic equalizer matching a classic Winamp/iTunes hardware EQ, with a fixed row-color ramp and an independently decaying peak-hold marker per bar. Compact by design to fit inside the 400px card, stacked under the artist line inside the text column.",
+      "html": "<div class=\"ds-eq\"><div class=\"ds-eq-bar\"><span class=\"ds-eq-peak\" style=\"bottom: 14px\"></span><span class=\"ds-eq-seg\" style=\"--seg-color:#2f6bff\"></span><span class=\"ds-eq-seg\" style=\"--seg-color:#2f6bff\"></span><span class=\"ds-eq-seg ds-lit\" style=\"--seg-color:#2f6bff\"></span><span class=\"ds-eq-seg ds-lit\" style=\"--seg-color:#22c7c0\"></span><span class=\"ds-eq-seg\" style=\"--seg-color:#22c7c0\"></span><span class=\"ds-eq-seg\" style=\"--seg-color:#3ee85a\"></span></div></div>",
+      "css": ".ds-eq { display: flex; align-items: flex-end; gap: 2px; height: 20px; margin-top: 3px; flex-shrink: 0; } .ds-eq-bar { position: relative; display: flex; flex-direction: column-reverse; gap: 1px; width: 6px; } .ds-eq-seg { width: 100%; height: 2px; border-radius: 0.5px; background: rgba(255,255,255,0.07); transition: background 0.06s linear, box-shadow 0.06s linear; } .ds-eq-seg.ds-lit { background: var(--seg-color); box-shadow: 0 0 3px var(--seg-color); } .ds-eq-peak { position: absolute; left: 0; right: 0; height: 1.5px; border-radius: 0.5px; background: #7cff8c; box-shadow: 0 0 4px #7cff8c; opacity: 0.9; transition: bottom 0.1s linear; } .ds-eq.ds-paused .ds-eq-seg.ds-lit { background: rgba(255,255,255,0.07); box-shadow: none; } .ds-eq.ds-paused .ds-eq-peak { opacity: 0; }"
     }
   ],
   "narrative": {
     "northStar": "Liquid Glass Pane",
-    "overview": "AeroGlass is a near-black, near-monochrome liquid glass widget, built to a user-supplied reference CSS file rather than an internally invented material. It rejects color as the source of identity: there is no accent hue anywhere in the system, only translucency, blur, and light/dark gradient tension across two stacked glass surfaces. The card itself is not a fixed-size stadium/pill — it is width: fit-content (200-400px) with a 40px rounded-rectangle corner, sizing to whatever title/artist text it holds rather than the reverse. Two earlier internally-generated directions — a blue-violet \"Aero Glass\" pane with SVG-lit gumdrop buttons, and a cyan-violet glowing dash-row indicator — were built, shown to the user, and explicitly rejected (\"no me convence\"); neither survives in the shipped code and neither is part of this system. The material reads as thickness, not flatness, through a deliberate two-layer construction: .card itself is a faint black glass base (rgba(0,0,0,0.1), blur(5px)), and .card::before is a second, separately-blurred liquid layer on top of it (blur(50px) saturate(200%) brightness(1.1)) carrying a 190deg dark-to-light gradient and asymmetric top/bottom borders. This double-blur stack, not a single translucent rectangle, is what makes the surface read as liquid glass rather than generic glassmorphism. This is a single-surface native Tauri desktop widget (460x170px window, no OS decorations, borderless, always-on-top, non-resizable), not a page or a component library serving multiple breakpoints.",
+    "overview": "AeroGlass is a near-black, near-monochrome liquid glass widget, built to a user-supplied reference CSS file rather than an internally invented material. It rejects color as the source of identity for the card itself: there is no accent hue anywhere in the glass, only translucency, blur, and light/dark gradient tension across two stacked glass surfaces. The card itself is not a fixed-size stadium/pill — it is width: fit-content (200-400px) with a 40px rounded-rectangle corner, sizing to whatever title/artist text it holds rather than the reverse. Two earlier internally-generated directions — a blue-violet \"Aero Glass\" pane with SVG-lit gumdrop buttons, and a cyan-violet glowing dash-row indicator — were built, shown to the user, and explicitly rejected (\"no me convence\"); neither survives in the shipped code and neither is part of this system. The material reads as thickness, not flatness, through a deliberate two-layer construction: .card itself is a faint black glass base (rgba(0,0,0,0.1), blur(5px)), and .card::before is a second, separately-blurred liquid layer on top of it (blur(50px) saturate(200%) brightness(1.1)) carrying a 190deg dark-to-light gradient and asymmetric top/bottom borders. This double-blur stack, not a single translucent rectangle, is what makes the surface read as liquid glass rather than generic glassmorphism. This is a single-surface native Tauri desktop widget (460x170px window, no OS decorations, borderless, always-on-top, non-resizable), not a page or a component library serving multiple breakpoints.",
     "keyCharacteristics": [
-      "Near-black, near-monochrome glass — no accent color anywhere in the system",
+      "Near-black, near-monochrome glass — no accent color anywhere in the card material itself",
       "Two stacked glass layers (.card base + .card::before liquid overlay) as the signature material technique",
       "Card sizes to content (fit-content, 200-400px), not a fixed pill silhouette",
       "Only the primary play/pause button has a button body; prev/next are bare, icon-only controls",
       "Title gets a hover-triggered horizontal marquee with an edge-mask fade; the artist line never does",
-      "Playback indicator is 4 transform-scaled bars (no glow, no color, no height-based animation)",
+      "Playback indicator is a 12-bar segmented graphic equalizer, matching a real reference image, living inside the text column rather than as a separate flex sibling",
       "Track changes fade+slide via toggled fadeIn/fadeOut classes, not a plain opacity transition",
       "Window dragging lives on .card, .icon-container, and .text-info — never on .controls"
     ],
     "rules": [
-      { "name": "The No-Accent Rule", "body": "No color in this system carries hue; every token is white or black at a chosen opacity. Identity comes from layering and blur, never from a saturated accent.", "section": "colors" },
+      { "name": "The No-Accent Rule", "body": "No color in the glass, buttons, or text carries hue; every one of those tokens is white or black at a chosen opacity. Identity comes from layering and blur. The segmented equalizer is the deliberate exception: its fixed row-color ramp is a borrowed classic graphic-EQ convention, not an invented brand accent, and does not license adding hue elsewhere.", "section": "colors" },
       { "name": "The Two-Layer Glass Rule", "body": "Every \"liquid glass\" surface in this system is built from two stacked layers with independent blur radii — a faint base fill (blur(5px)) and a separately-blurred gradient overlay (blur(50px) saturate(200%) brightness(1.1)) — never a single translucent rectangle with one blur value.", "section": "colors" },
       { "name": "The Marquee-Is-Title-Only Rule", "body": "The hover-triggered horizontal scroll (h1:hover span, scroll-text 8s loop) and its mask-edge fade apply only to the title. The artist line always truncates statically.", "section": "typography" },
-      { "name": "The Neutral-Shadow Rule", "body": "Every shadow and glow in this system is black or white; nothing is tinted. A colored glow was part of the rejected Aero Glass world and does not belong here.", "section": "elevation" }
+      { "name": "The Neutral-Shadow Rule", "body": "Every shadow and glow on the glass, buttons, and text is black or white; nothing there is tinted. A colored glow was part of the rejected Aero Glass world. This does not extend to the equalizer's own scoped LED segment glow.", "section": "elevation" },
+      { "name": "The Single-Clock Peak Rule", "body": "Equalizer peak-hold decay must be driven by one interval that reads the live level directly, never by a per-render 'bump on level update' effect racing a separate decay interval — the two-effect version shipped a real bug where the peak marker appeared stuck.", "section": "components" },
+      { "name": "The Small-Footprint Rule", "body": "The equalizer is sized to fit inside the original small card (max-width 400px, 460px window) and lives as a third stacked row inside .text-info, not as a new flex sibling in .content that would widen the row. An earlier full-width build was rejected by the user for not matching the widget's established small footprint.", "section": "components" }
     ],
     "dos": [
       "Do build any new glass surface as two stacked layers with independently tuned blur values, matching .card/.card::before — never a single translucent rectangle.",
       "Do size the card to its content (fit-content, bounded 200-400px) rather than forcing a fixed width or a stadium silhouette.",
-      "Do keep every shadow and glow neutral (black or white); never tint a shadow with color.",
+      "Do keep every glass/button/text shadow and glow neutral (black or white); never tint a shadow with color outside the equalizer's own scoped LED glow.",
       "Do reserve the button body for the single primary action; keep prev/next transparent until hovered.",
-      "Do drive the playback indicator and any future \"live\" signal through transform/opacity, not box-shadow glow or color shift.",
+      "Do drive the equalizer's peak-hold decay from a single authoritative interval that reads live levels directly, never from a separate per-update 'bump' effect racing a decay effect.",
+      "Do keep any future audio-reactive component sized to fit the existing 460px window and 400px card — build compact and in-column first, not full-width.",
       "Do put data-tauri-drag-region only on non-interactive regions (.card, .icon-container, .text-info), never on .controls or its buttons."
     ],
     "donts": [
-      "Don't reintroduce color/hue as a source of identity — the blue-violet \"Aero Glass\" pane and its amber gumdrop buttons were explicitly rejected and are not part of this system.",
-      "Don't reintroduce a glowing colored dash-row or per-element box-shadow glow as a resting-state decoration — the cyan-violet dash indicator was rejected along with the rest of that world.",
+      "Don't reintroduce color/hue as a source of identity on the glass, buttons, or text — the blue-violet \"Aero Glass\" pane and its amber gumdrop buttons were explicitly rejected and are not part of this system.",
+      "Don't key equalizer segment color to bar index or frequency band; it is keyed to row position (height) only, matching the classic graphic-EQ convention this component was built to reference.",
+      "Don't freeze the peak-hold marker or lit segments in a 'last known' state when playback stops; the no-signal state hides the peak and dims lit segments to the unlit background color instead.",
       "Don't apply the title's hover marquee treatment to the artist line or any other truncated text; it is a title-only behavior.",
       "Don't design against a resizable-viewport assumption; this is a fixed 460x170px native window with no breakpoints."
     ]
