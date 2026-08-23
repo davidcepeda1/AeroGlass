@@ -59,6 +59,24 @@
         "value": "rgba(20, 22, 28, 0.92)",
         "createdAt": "2026-08-23T00:20:09.069Z",
         "reason": "eq-pill-mask covers the unlit portion of the pill bar, matches the widget's near-black card background"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "16px",
+        "createdAt": "2026-08-23T00:30:10.996Z",
+        "reason": "title font bumped to match docs/template.png spacing/scale, confirmed by user"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "14px",
+        "createdAt": "2026-08-23T00:30:11.065Z",
+        "reason": "artist font bumped to match docs/template.png spacing/scale, confirmed by user"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "20px",
+        "createdAt": "2026-08-23T00:38:27.633Z",
+        "reason": "title font size matched to docs/template.png pixel measurements (453x143 template ~ our 460x200 window), confirmed by user"
       }
     ]
   }

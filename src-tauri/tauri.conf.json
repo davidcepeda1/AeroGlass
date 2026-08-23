@@ -13,7 +13,7 @@
     "windows": [
       {
         "title": "aeroglass",
-        "width": 460,
+        "width": 500,
         "height": 170,
         "resizable": false,
         "decorations": false,
