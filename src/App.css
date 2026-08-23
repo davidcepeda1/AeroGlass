@@ -104,6 +104,14 @@ body,
 
   /* Color de respaldo si la imagen no carga */
   background-color: rgba(255, 255, 255, 0.1);
+
+  /* Forces its own GPU compositing layer, isolated from the ancestor
+     .card's backdrop-filter blur. Without this, WebKitGTK rasterizes this
+     element's rounded-corner clip through the same (much coarser) mask
+     pass used for the blur, producing a blocky staircase instead of a
+     smooth arc at one corner. */
+  transform: translateZ(0);
+  isolation: isolate;
 }
 
 .icon-container img {
@@ -111,6 +119,12 @@ body,
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* WebKitGTK sometimes fails to clip one corner (usually top-left) of a
+     composited object-fit image against the parent's overflow:hidden +
+     border-radius, leaving a stepped notch. Rounding the image itself too
+     is redundant on browsers where the parent clip works, but is what
+     actually fixes it here. */
+  border-radius: inherit;
 }
 
 /* Contenedor de texto (título, artista y wave) */
