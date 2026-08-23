@@ -249,6 +249,58 @@ p {
 }
 
 /* =========================
+   Ecualizador estilo "pill" (barras sólidas, sin segmentos)
+   ========================= */
+.eq-pill-bar {
+  position: relative;
+  width: 6px;
+  height: 20px;
+  border-radius: 3px;
+  overflow: hidden;
+  background-image: linear-gradient(
+    to top,
+    #2f6bff 0%,
+    #22c7c0 50%,
+    #3ee85a 100%
+  );
+  box-shadow: 0 0 4px rgba(62, 232, 90, 0.25);
+}
+
+/* Covers the unlit portion from the top and shrinks away via transform (not
+   height/width) so the audio-rate update never triggers layout — only
+   compositing. The gradient lives on .eq-pill-bar underneath and is
+   revealed, not repainted, as this mask scales down. */
+.eq-pill-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 22, 28, 0.92);
+  transform-origin: top;
+  transform: scaleY(var(--unlit, 1));
+  transition: transform 0.08s ease-out;
+}
+
+.eq.eq-pill.eq-paused .eq-pill-bar {
+  box-shadow: none;
+}
+
+.eq.eq-pill.eq-paused .eq-pill-mask {
+  transform: scaleY(1) !important;
+}
+
+/* =========================
+   Selector de estilo del ecualizador (clic para cambiar)
+   ========================= */
+.eq-switcher {
+  cursor: pointer;
+  border-radius: 6px;
+  transition: filter 0.15s ease;
+}
+
+.eq-switcher:hover {
+  filter: brightness(1.35);
+}
+
+/* =========================
    Controles de reproducción
    ========================= */
 .controls {

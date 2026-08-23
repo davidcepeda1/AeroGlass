@@ -41,6 +41,18 @@
         "value": "#7cff8c",
         "createdAt": "2026-08-22T23:12:55.559Z",
         "reason": "user confirmed: classic graphic-EQ peak-hold indicator color (bright green), matching the user-supplied reference image docs/barra.png"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "3px",
+        "createdAt": "2026-08-23T00:01:58.084Z",
+        "reason": "pill-style equalizer bar caps, matches approved 'barras pill' mockup"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "6px",
+        "createdAt": "2026-08-23T00:01:58.152Z",
+        "reason": "eq-switcher hover hit-area radius, small compact widget control"
       }
     ]
   }

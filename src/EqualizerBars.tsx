@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
+export type EqualizerStyle = "segmented" | "pill";
+
 interface EqualizerBarsProps {
   /** One 0-1 level per bar — real audio energy, or a decorative fallback. */
   levels: number[];
   isPlaying: boolean;
+  style: EqualizerStyle;
 }
 
 const SEGMENTS = 6;
@@ -31,7 +34,25 @@ function segmentColor(rowFromBottom: number, totalRows: number): string {
   return "#3ee85a";
 }
 
-function EqualizerBars({ levels, isPlaying }: EqualizerBarsProps) {
+function PillBars({ levels, isPlaying }: Omit<EqualizerBarsProps, "style">) {
+  return (
+    <div className={`eq eq-pill${isPlaying ? "" : " eq-paused"}`}>
+      {levels.map((level, barIndex) => {
+        const lit = isPlaying ? Math.max(0.15, level) : 0;
+        return (
+          <div className="eq-pill-bar" key={barIndex}>
+            <div
+              className="eq-pill-mask"
+              style={{ "--unlit": 1 - lit } as CSSProperties}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SegmentedBars({ levels, isPlaying }: Omit<EqualizerBarsProps, "style">) {
   const levelsRef = useRef(levels);
   levelsRef.current = levels;
   const fallSpeedRef = useRef<number[]>(levels.map(() => 0));
@@ -110,6 +131,14 @@ function EqualizerBars({ levels, isPlaying }: EqualizerBarsProps) {
         );
       })}
     </div>
+  );
+}
+
+function EqualizerBars({ levels, isPlaying, style }: EqualizerBarsProps) {
+  return style === "pill" ? (
+    <PillBars levels={levels} isPlaying={isPlaying} />
+  ) : (
+    <SegmentedBars levels={levels} isPlaying={isPlaying} />
   );
 }
 

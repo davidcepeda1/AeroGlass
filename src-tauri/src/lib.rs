@@ -20,6 +20,30 @@ fn control_media(action: MediaAction) {
     media::send_control(action);
 }
 
+const DEFAULT_VISUALIZER_STYLE: &str = "segmented";
+
+fn visualizer_style_path(app: &tauri::AppHandle) -> Option<std::path::PathBuf> {
+    let dir = app.path().app_config_dir().ok()?;
+    std::fs::create_dir_all(&dir).ok()?;
+    Some(dir.join("visualizer-style.txt"))
+}
+
+#[tauri::command]
+fn get_visualizer_style(app: tauri::AppHandle) -> String {
+    visualizer_style_path(&app)
+        .and_then(|path| std::fs::read_to_string(path).ok())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| DEFAULT_VISUALIZER_STYLE.to_string())
+}
+
+#[tauri::command]
+fn set_visualizer_style(app: tauri::AppHandle, style: String) {
+    if let Some(path) = visualizer_style_path(&app) {
+        let _ = std::fs::write(path, style);
+    }
+}
+
 fn toggle_window_visibility(app: &tauri::AppHandle) {
     let Some(window) = app.get_webview_window("main") else {
         return;
@@ -48,7 +72,12 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![check_music, control_media])
+        .invoke_handler(tauri::generate_handler![
+            check_music,
+            control_media,
+            get_visualizer_style,
+            set_visualizer_style
+        ])
         .setup(|app| {
             audio::start(app.handle().clone());
             media::watch_song_changes(app.handle().clone());

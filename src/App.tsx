@@ -3,8 +3,10 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import coverPlaceholder from "./assets/cover-placeholder.svg";
-import EqualizerBars from "./EqualizerBars";
+import EqualizerBars, { type EqualizerStyle } from "./EqualizerBars";
 import "./App.css";
+
+const EQ_STYLES: EqualizerStyle[] = ["segmented", "pill"];
 
 const WAVE_BARS = 12;
 const FADE_MS = 300;
@@ -48,8 +50,27 @@ function App() {
   const [decorativeLevels, setDecorativeLevels] = useState(() =>
     randomLevels(WAVE_BARS),
   );
+  const [eqStyle, setEqStyle] = useState<EqualizerStyle>("segmented");
   const lastLevelsAtRef = useRef(0);
   const trackKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    invoke<string>("get_visualizer_style")
+      .then((style) => {
+        if (EQ_STYLES.includes(style as EqualizerStyle)) {
+          setEqStyle(style as EqualizerStyle);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  const cycleEqStyle = () => {
+    setEqStyle((current) => {
+      const next = EQ_STYLES[(EQ_STYLES.indexOf(current) + 1) % EQ_STYLES.length];
+      invoke("set_visualizer_style", { style: next }).catch(console.error);
+      return next;
+    });
+  };
 
   useEffect(() => {
     const unlisten = listen<number[]>("audio-levels", (event) => {
@@ -143,7 +164,17 @@ function App() {
             <span data-tauri-drag-region>{title}</span>
           </h1>
           <p data-tauri-drag-region>{artist}</p>
-          <EqualizerBars levels={eqLevels} isPlaying={isPlaying} />
+          <div
+            className="eq-switcher"
+            onClick={cycleEqStyle}
+            title="Click to change visualizer style"
+          >
+            <EqualizerBars
+              levels={eqLevels}
+              isPlaying={isPlaying}
+              style={eqStyle}
+            />
+          </div>
         </div>
 
         <div className="controls">
