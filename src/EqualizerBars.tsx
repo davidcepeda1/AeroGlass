@@ -26,6 +26,15 @@ const PEAK_FALL_MAX_ROWS = 0.7;
 // never frozen or hidden, it just goes far enough to clip out of view.
 const PEAK_FLOOR_ROWS = -2;
 
+// Ballistics for the lit column itself (not just the peak dot). Without this
+// the segment count snaps directly to whatever raw FFT-band value arrived
+// that tick, which reads as flicker/noise rather than something following
+// the music — real meters rise almost instantly on a transient but fall
+// back gently, so the ear can connect "loud moment -> bar jumps up" even
+// though the raw energy value is jittering every ~43ms underneath.
+const LEVEL_ATTACK = 0.65;
+const LEVEL_RELEASE = 0.22;
+
 /** Bottom-to-top color ramp, matching a classic graphic-EQ: blue -> cyan -> green. */
 function segmentColor(rowFromBottom: number, totalRows: number): string {
   const t = rowFromBottom / (totalRows - 1);
@@ -62,6 +71,14 @@ function SegmentedBars({ levels, isPlaying }: Omit<EqualizerBarsProps, "style">)
   // sliding below the visible column instead of stopping dead at row 0).
   const [peakRows, setPeakRows] = useState<number[]>(() => levels.map(() => 0));
 
+  // The lit column's own level, eased toward the raw audio value (fast
+  // attack, slower release) instead of snapping to it every tick — this is
+  // what the peak dot already gets, applied to the bar itself so the count
+  // of lit segments follows the music's envelope instead of raw FFT jitter.
+  const [smoothedLevels, setSmoothedLevels] = useState<number[]>(() =>
+    levels.map(() => 0),
+  );
+
   // Single authoritative tick: instant rise -> brief hold -> accelerating
   // fall, all driven from one interval reading the *current* level. Doing
   // this in one place (instead of a separate "bump up on every
@@ -95,14 +112,24 @@ function SegmentedBars({ levels, isPlaying }: Omit<EqualizerBarsProps, "style">)
           return Math.max(lvlRow, fallen, PEAK_FLOOR_ROWS);
         }),
       );
+
+      setSmoothedLevels((prev) =>
+        levelsRef.current.map((target, i) => {
+          const current = prev[i] ?? 0;
+          const rate = target >= current ? LEVEL_ATTACK : LEVEL_RELEASE;
+          return current + (target - current) * rate;
+        }),
+      );
     }, PEAK_DECAY_INTERVAL_MS);
     return () => clearInterval(id);
   }, []);
 
   return (
     <div className={`eq${isPlaying ? "" : " eq-paused"}`}>
-      {levels.map((level, barIndex) => {
-        const lit = isPlaying ? Math.round(level * SEGMENTS) : 0;
+      {levels.map((_, barIndex) => {
+        const lit = isPlaying
+          ? Math.round((smoothedLevels[barIndex] ?? 0) * SEGMENTS)
+          : 0;
         // Clamp only the top: never render above the bar's own column. No
         // bottom clamp — it's allowed to slide below row 0 and clip out of
         // view (see .eq-bar { overflow: hidden }) instead of parking there.

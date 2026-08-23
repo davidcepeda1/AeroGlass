@@ -53,6 +53,12 @@
         "value": "6px",
         "createdAt": "2026-08-23T00:01:58.152Z",
         "reason": "eq-switcher hover hit-area radius, small compact widget control"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(20, 22, 28, 0.92)",
+        "createdAt": "2026-08-23T00:20:09.069Z",
+        "reason": "eq-pill-mask covers the unlit portion of the pill bar, matches the widget's near-black card background"
       }
     ]
   }
