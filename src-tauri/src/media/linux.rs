@@ -1,11 +1,67 @@
-use super::{MediaAction, SongInfo};
+use super::{MediaAction, SessionSummary, SongInfo};
 use base64::{engine::general_purpose::STANDARD, Engine};
 use mpris::{Event, PlaybackStatus, Player, PlayerFinder};
 use tauri::{AppHandle, Emitter};
 
 fn active_player() -> Option<Player> {
     let finder = PlayerFinder::new().ok()?;
+
+    // An explicit choice (multiple apps playing at once) wins, but only if
+    // that player is still there — a session that quit falls back to the
+    // usual "most likely" pick instead of the widget going blank.
+    if let Some(id) = super::get_active_session() {
+        if let Ok(players) = finder.find_all() {
+            if let Some(player) = players.into_iter().find(|p| p.bus_name() == id) {
+                return Some(player);
+            }
+        }
+    }
+
     finder.find_active().or_else(|_| finder.find_first()).ok()
+}
+
+/// Every app currently exposing an MPRIS player, for the session picker —
+/// independent of playback state, so a paused app still shows up as a
+/// choice.
+pub fn list_sessions() -> Vec<SessionSummary> {
+    let Ok(finder) = PlayerFinder::new() else {
+        return Vec::new();
+    };
+    let Ok(players) = finder.find_all() else {
+        return Vec::new();
+    };
+
+    // Some players (VLC observed in practice) register a second, generic
+    // bus name alongside their per-instance one — same process, same
+    // `identity()`, which would otherwise show up as two indistinguishable
+    // entries with the same label. Keep one bus name per identity,
+    // preferring the `.instanceN` one since that stays tied to this exact
+    // process even if a second window of the same app claims the generic
+    // alias.
+    let mut bus_name_by_identity: std::collections::HashMap<String, String> =
+        std::collections::HashMap::new();
+    for player in &players {
+        let bus_name = player.bus_name().to_string();
+        bus_name_by_identity
+            .entry(player.identity().to_string())
+            .and_modify(|existing| {
+                if bus_name.contains(".instance") {
+                    *existing = bus_name.clone();
+                }
+            })
+            .or_insert(bus_name);
+    }
+
+    let mut sessions: Vec<SessionSummary> = bus_name_by_identity
+        .into_iter()
+        .map(|(name, id)| SessionSummary { id, name })
+        .collect();
+    // Stable order: HashMap iteration order isn't guaranteed consistent
+    // across calls, which would otherwise make the list look like it
+    // reshuffles on every poll tick and make change-detection (comparing
+    // this list between polls) unreliable.
+    sessions.sort_by(|a, b| a.id.cmp(&b.id));
+    sessions
 }
 
 fn guess_mime(path: &str) -> &'static str {

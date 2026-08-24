@@ -1,4 +1,4 @@
-use super::{MediaAction, SongInfo};
+use super::{MediaAction, SessionSummary, SongInfo};
 use base64::{engine::general_purpose::STANDARD, Engine};
 use tauri::{AppHandle, Emitter};
 use windows::Foundation::TypedEventHandler;
@@ -10,12 +10,59 @@ use windows::Media::Control::{
 };
 use windows::Storage::Streams::DataReader;
 
-fn current_session() -> Option<GlobalSystemMediaTransportControlsSession> {
-    let manager = GlobalSystemMediaTransportControlsSessionManager::RequestAsync()
+fn manager() -> Option<GlobalSystemMediaTransportControlsSessionManager> {
+    GlobalSystemMediaTransportControlsSessionManager::RequestAsync()
         .ok()?
         .join()
-        .ok()?;
+        .ok()
+}
+
+fn current_session() -> Option<GlobalSystemMediaTransportControlsSession> {
+    let manager = manager()?;
+
+    // An explicit choice (multiple apps playing at once) wins, but only if
+    // that session is still there — a session that quit falls back to
+    // whatever WinRT itself considers current, instead of the widget going
+    // blank.
+    if let Some(id) = super::get_active_session() {
+        if let Ok(sessions) = manager.GetSessions() {
+            for session in sessions {
+                if session
+                    .SourceAppUserModelId()
+                    .map(|s| s.to_string())
+                    .unwrap_or_default()
+                    == id
+                {
+                    return Some(session);
+                }
+            }
+        }
+    }
+
     manager.GetCurrentSession().ok()
+}
+
+/// Every app currently exposing a media session, for the session picker —
+/// independent of playback state, so a paused app still shows up as a
+/// choice.
+pub fn list_sessions() -> Vec<SessionSummary> {
+    let Some(manager) = manager() else {
+        return Vec::new();
+    };
+    let Ok(sessions) = manager.GetSessions() else {
+        return Vec::new();
+    };
+
+    sessions
+        .into_iter()
+        .filter_map(|s| {
+            let id = s.SourceAppUserModelId().ok()?.to_string();
+            Some(SessionSummary {
+                name: id.clone(),
+                id,
+            })
+        })
+        .collect()
 }
 
 /// The Windows Media Session API only hands back raw thumbnail bytes (no
