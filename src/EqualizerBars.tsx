@@ -7,6 +7,9 @@ interface EqualizerBarsProps {
   levels: number[];
   isPlaying: boolean;
   style: EqualizerStyle;
+  /** Bottom-to-top gradient stops, themed off the album cover (or the
+   * default palette) — see `getEqualizerPalette` in `lib/albumColor`. */
+  palette: string[];
 }
 
 const SEGMENTS = 6;
@@ -35,17 +38,51 @@ const PEAK_FLOOR_ROWS = -2;
 const LEVEL_ATTACK = 0.65;
 const LEVEL_RELEASE = 0.22;
 
-/** Bottom-to-top color ramp, matching a classic graphic-EQ: blue -> cyan -> green. */
-function segmentColor(rowFromBottom: number, totalRows: number): string {
-  const t = rowFromBottom / (totalRows - 1);
-  if (t < 0.45) return "#2f6bff";
-  if (t < 0.75) return "#22c7c0";
-  return "#3ee85a";
+function hexToRgb(hex: string): [number, number, number] {
+  return [
+    parseInt(hex.slice(1, 3), 16),
+    parseInt(hex.slice(3, 5), 16),
+    parseInt(hex.slice(5, 7), 16),
+  ];
 }
 
-function PillBars({ levels, isPlaying }: Omit<EqualizerBarsProps, "style">) {
+function rgbToHex(r: number, g: number, b: number): string {
+  const toHex = (v: number) => Math.round(v).toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+/** Samples a color at position `t` (0-1, bottom to top) along an ordered
+ * list of hex stops, linearly blending between the two nearest ones. The
+ * stops are already densely spaced and hue-consistent (see
+ * `getEqualizerPalette`), so a plain RGB blend between neighbors is enough —
+ * no need to redo the hue-aware interpolation at render time. */
+function sampleGradient(stops: string[], t: number): string {
+  const clamped = Math.min(1, Math.max(0, t));
+  const scaled = clamped * (stops.length - 1);
+  const i = Math.min(stops.length - 2, Math.floor(scaled));
+  const frac = scaled - i;
+  const [r1, g1, b1] = hexToRgb(stops[i]);
+  const [r2, g2, b2] = hexToRgb(stops[i + 1]);
+  return rgbToHex(
+    r1 + (r2 - r1) * frac,
+    g1 + (g2 - g1) * frac,
+    b1 + (b2 - b1) * frac,
+  );
+}
+
+function PillBars({
+  levels,
+  isPlaying,
+  palette,
+}: Omit<EqualizerBarsProps, "style">) {
+  const gradient = `linear-gradient(to top, ${palette.join(", ")})`;
+  const [glowR, glowG, glowB] = hexToRgb(palette[palette.length - 1]);
+  const glow = `rgba(${glowR}, ${glowG}, ${glowB}, 0.25)`;
   return (
-    <div className={`eq eq-pill${isPlaying ? "" : " eq-paused"}`}>
+    <div
+      className={`eq eq-pill${isPlaying ? "" : " eq-paused"}`}
+      style={{ "--eq-gradient": gradient, "--eq-glow": glow } as CSSProperties}
+    >
       {levels.map((level, barIndex) => {
         const lit = isPlaying ? Math.max(0.15, level) : 0;
         return (
@@ -61,7 +98,11 @@ function PillBars({ levels, isPlaying }: Omit<EqualizerBarsProps, "style">) {
   );
 }
 
-function SegmentedBars({ levels, isPlaying }: Omit<EqualizerBarsProps, "style">) {
+function SegmentedBars({
+  levels,
+  isPlaying,
+  palette,
+}: Omit<EqualizerBarsProps, "style">) {
   const levelsRef = useRef(levels);
   levelsRef.current = levels;
   const fallSpeedRef = useRef<number[]>(levels.map(() => 0));
@@ -149,7 +190,7 @@ function SegmentedBars({ levels, isPlaying }: Omit<EqualizerBarsProps, "style">)
                 className={`eq-seg${rowIndex < lit ? " lit" : ""}`}
                 style={
                   {
-                    "--seg-color": segmentColor(rowIndex, SEGMENTS),
+                    "--seg-color": sampleGradient(palette, rowIndex / (SEGMENTS - 1)),
                   } as CSSProperties
                 }
               />
@@ -161,11 +202,11 @@ function SegmentedBars({ levels, isPlaying }: Omit<EqualizerBarsProps, "style">)
   );
 }
 
-function EqualizerBars({ levels, isPlaying, style }: EqualizerBarsProps) {
+function EqualizerBars({ levels, isPlaying, style, palette }: EqualizerBarsProps) {
   return style === "pill" ? (
-    <PillBars levels={levels} isPlaying={isPlaying} />
+    <PillBars levels={levels} isPlaying={isPlaying} palette={palette} />
   ) : (
-    <SegmentedBars levels={levels} isPlaying={isPlaying} />
+    <SegmentedBars levels={levels} isPlaying={isPlaying} palette={palette} />
   );
 }
 

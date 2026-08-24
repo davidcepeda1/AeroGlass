@@ -271,13 +271,8 @@ p {
   height: 20px;
   border-radius: 3px;
   overflow: hidden;
-  background-image: linear-gradient(
-    to top,
-    #2f6bff 0%,
-    #22c7c0 50%,
-    #3ee85a 100%
-  );
-  box-shadow: 0 0 4px rgba(62, 232, 90, 0.25);
+  background-image: var(--eq-gradient);
+  box-shadow: 0 0 4px var(--eq-glow, rgba(62, 232, 90, 0.25));
 }
 
 /* Covers the unlit portion from the top and shrinks away via transform (not

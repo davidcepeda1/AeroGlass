@@ -4,6 +4,7 @@ import { listen } from "@tauri-apps/api/event";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import coverPlaceholder from "./assets/cover-placeholder.svg";
 import EqualizerBars, { type EqualizerStyle } from "./EqualizerBars";
+import { useAlbumPalette } from "./lib/useAlbumPalette";
 import "./App.css";
 
 const EQ_STYLES: EqualizerStyle[] = ["segmented", "pill"];
@@ -142,6 +143,8 @@ function App() {
     };
   }, []);
 
+  const eqPalette = useAlbumPalette(displaySong.coverArt);
+
   const hasTrack = displaySong.title !== "";
   const title = hasTrack ? displaySong.title : "No track playing";
   const artist = hasTrack ? displaySong.artist : "—";
@@ -173,6 +176,7 @@ function App() {
               levels={eqLevels}
               isPlaying={isPlaying}
               style={eqStyle}
+              palette={eqPalette}
             />
           </div>
         </div>

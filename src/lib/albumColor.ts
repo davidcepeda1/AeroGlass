@@ -190,3 +190,87 @@ export async function extractDominantColors(
 
   return [hslToHex(primary), hslToHex(secondary)];
 }
+
+function hexToHsl(hex: string): Hsl {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return rgbToHsl(r, g, b);
+}
+
+// Used when there's no usable album color (no cover, extraction failed, or
+// the art was too dark/desaturated to theme around) — the same blue-through-
+// green feel the equalizer always had, fed through the same ordering and
+// interpolation path as real extracted colors so there's exactly one code
+// path to get right, not two.
+const DEFAULT_PALETTE: DominantColors = ["#2f6bff", "#3ee85a"];
+
+const GRADIENT_STOP_COUNT = 5;
+
+/**
+ * Decides which color is the "bottom" of the equalizer gradient and which
+ * is the "top". Interpolating hue along the *shorter* arc between the two
+ * (rather than whichever direction the raw values happen to fall in) is
+ * what keeps the transition looking intentional instead of muddy — e.g.
+ * red -> yellow the short way passes through orange (60° away); the long
+ * way around the wheel passes through magenta, blue and green first (300°),
+ * which reads as arbitrary. Once that direction is fixed, going bottom-to-
+ * top *along* it naturally increases hue the "warm" way (red -> orange ->
+ * yellow), matching how a rising bar reads as more energetic.
+ */
+function orderForGradient(colors: DominantColors): DominantColors {
+  const [a, b] = colors.map(hexToHsl) as [Hsl, Hsl];
+
+  // Exactly opposite hues (or both desaturated enough that hue is
+  // meaningless): there's no "shorter side" to prefer, so fall back to the
+  // same quiet/loud metaphor used everywhere else in the equalizer — darker
+  // at the bottom, lighter at the top.
+  if (Math.abs(hueDistance(a.h, b.h) - 0.5) < 1e-6 || (a.s < 0.05 && b.s < 0.05)) {
+    return a.l <= b.l ? colors : [colors[1], colors[0]];
+  }
+
+  const forwardDelta = ((b.h - a.h) % 1 + 1) % 1; // a -> b, increasing hue
+  // If going forward from a lands on b within the shorter half of the
+  // wheel, a is already the natural start of that shorter arc.
+  return forwardDelta <= 0.5 ? colors : [colors[1], colors[0]];
+}
+
+/** Signed hue delta from `a` to `b` along whichever arc is shorter, so
+ * lerping `a.h + t * delta` never takes the long way around the wheel. */
+function shortestHueDelta(a: number, b: number): number {
+  let delta = (b - a) % 1;
+  if (delta > 0.5) delta -= 1;
+  if (delta < -0.5) delta += 1;
+  return delta;
+}
+
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
+
+/**
+ * Builds an evenly-spaced set of hex stops (bottom to top) for the
+ * equalizer's gradient, interpolating hue/saturation/lightness independently
+ * so the transition stays smooth and doesn't dip through gray the way a raw
+ * RGB blend between two very different hues would.
+ */
+function buildGradientStops(colors: DominantColors, count = GRADIENT_STOP_COUNT): string[] {
+  const [bottom, top] = orderForGradient(colors).map(hexToHsl) as [Hsl, Hsl];
+  const hueDelta = shortestHueDelta(bottom.h, top.h);
+
+  return Array.from({ length: count }, (_, i) => {
+    const t = i / (count - 1);
+    const h = (bottom.h + hueDelta * t + 1) % 1;
+    return hslToHex({
+      h,
+      s: lerp(bottom.s, top.s, t),
+      l: lerp(bottom.l, top.l, t),
+    });
+  });
+}
+
+/** Gradient stops for the equalizer, bottom to top — from real album colors
+ * when available, or the default palette otherwise. */
+export function getEqualizerPalette(extracted: DominantColors | null): string[] {
+  return buildGradientStops(extracted ?? DEFAULT_PALETTE);
+}
