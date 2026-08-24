@@ -274,3 +274,33 @@ function buildGradientStops(colors: DominantColors, count = GRADIENT_STOP_COUNT)
 export function getEqualizerPalette(extracted: DominantColors | null): string[] {
   return buildGradientStops(extracted ?? DEFAULT_PALETTE);
 }
+
+// The classic bright-green peak marker — kept as the fallback so the widget
+// looks exactly as it always has when there's no usable album color, same
+// as the default blue/green bar gradient.
+const DEFAULT_PEAK_COLOR = "#7cff8c";
+
+/**
+ * Color for the peak-hold marker: deliberately *not* one of the two bar
+ * gradient colors, or a shade of them, so it still pops as a distinct
+ * "peak" indicator instead of blending into the bar underneath it. Rotating
+ * 180° from the gradient's midpoint hue is the point guaranteed farthest
+ * from *both* endpoints (the gradient only ever spans up to 180° of the
+ * wheel, so its antipode can't be close to either side), boosted in
+ * saturation/lightness for the same punchy, glowing look the original
+ * fixed green had.
+ */
+export function getPeakColor(extracted: DominantColors | null): string {
+  if (!extracted) return DEFAULT_PEAK_COLOR;
+
+  const [bottom, top] = orderForGradient(extracted).map(hexToHsl) as [Hsl, Hsl];
+  const hueDelta = shortestHueDelta(bottom.h, top.h);
+  const midHue = (bottom.h + hueDelta / 2 + 1) % 1;
+  const peakHue = (midHue + 0.5) % 1;
+
+  return hslToHex({
+    h: peakHue,
+    s: Math.max(bottom.s, top.s, 0.7),
+    l: 0.68,
+  });
+}

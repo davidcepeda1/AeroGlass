@@ -176,7 +176,8 @@ function App() {
               levels={eqLevels}
               isPlaying={isPlaying}
               style={eqStyle}
-              palette={eqPalette}
+              palette={eqPalette.stops}
+              peakColor={eqPalette.peakColor}
             />
           </div>
         </div>

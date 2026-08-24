@@ -10,6 +10,9 @@ interface EqualizerBarsProps {
   /** Bottom-to-top gradient stops, themed off the album cover (or the
    * default palette) — see `getEqualizerPalette` in `lib/albumColor`. */
   palette: string[];
+  /** Peak-hold marker color — deliberately distinct from `palette`, see
+   * `getPeakColor` in `lib/albumColor`. Only used by the segmented style. */
+  peakColor: string;
 }
 
 const SEGMENTS = 6;
@@ -74,7 +77,7 @@ function PillBars({
   levels,
   isPlaying,
   palette,
-}: Omit<EqualizerBarsProps, "style">) {
+}: Omit<EqualizerBarsProps, "style" | "peakColor">) {
   const gradient = `linear-gradient(to top, ${palette.join(", ")})`;
   const [glowR, glowG, glowB] = hexToRgb(palette[palette.length - 1]);
   const glow = `rgba(${glowR}, ${glowG}, ${glowB}, 0.25)`;
@@ -102,6 +105,7 @@ function SegmentedBars({
   levels,
   isPlaying,
   palette,
+  peakColor,
 }: Omit<EqualizerBarsProps, "style">) {
   const levelsRef = useRef(levels);
   levelsRef.current = levels;
@@ -182,7 +186,12 @@ function SegmentedBars({
           <div className="eq-bar" key={barIndex}>
             <div
               className="eq-peak"
-              style={{ "--peak-row": peakRow } as CSSProperties}
+              style={
+                {
+                  "--peak-row": peakRow,
+                  "--peak-color": peakColor,
+                } as CSSProperties
+              }
             />
             {Array.from({ length: SEGMENTS }, (_, rowIndex) => (
               <span
@@ -202,11 +211,22 @@ function SegmentedBars({
   );
 }
 
-function EqualizerBars({ levels, isPlaying, style, palette }: EqualizerBarsProps) {
+function EqualizerBars({
+  levels,
+  isPlaying,
+  style,
+  palette,
+  peakColor,
+}: EqualizerBarsProps) {
   return style === "pill" ? (
     <PillBars levels={levels} isPlaying={isPlaying} palette={palette} />
   ) : (
-    <SegmentedBars levels={levels} isPlaying={isPlaying} palette={palette} />
+    <SegmentedBars
+      levels={levels}
+      isPlaying={isPlaying}
+      palette={palette}
+      peakColor={peakColor}
+    />
   );
 }
 

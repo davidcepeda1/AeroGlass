@@ -246,8 +246,8 @@ p {
   right: 0;
   height: 1.5px;
   border-radius: 0.5px;
-  background: #7cff8c;
-  box-shadow: 0 0 4px #7cff8c;
+  background: var(--peak-color, #7cff8c);
+  box-shadow: 0 0 4px var(--peak-color, #7cff8c);
   bottom: calc(var(--peak-row, 0) * 3px + 2px);
   opacity: 0.9;
   transition: bottom 0.05s linear;
