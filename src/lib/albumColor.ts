@@ -141,6 +141,162 @@ function boxBlur(pixels: Uint8ClampedArray, width: number, height: number): Uint
   return out;
 }
 
+// --- OKLab: a perceptually-uniform color space (Björn Ottosson, 2020) ---
+// Clustering in raw sRGB/HSL distorts "how different two colors actually
+// look" — e.g. equal-sized steps in hue aren't equally noticeable across
+// the wheel. OKLab distance tracks human perception much more closely, so
+// grouping pixels by OKLab distance produces clusters that actually match
+// what a person would call "the same color", instead of clusters shaped by
+// a fixed grid or by hue/lightness/saturation's own quirks.
+interface Oklab {
+  L: number;
+  a: number;
+  b: number;
+}
+
+function srgbToLinear(c: number): number {
+  const v = c / 255;
+  return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+}
+
+function linearToSrgb(v: number): number {
+  const clamped = Math.max(0, Math.min(1, v));
+  return Math.round(
+    (clamped <= 0.0031308 ? clamped * 12.92 : 1.055 * Math.pow(clamped, 1 / 2.4) - 0.055) * 255,
+  );
+}
+
+function rgbToOklab(r: number, g: number, b: number): Oklab {
+  const lr = srgbToLinear(r);
+  const lg = srgbToLinear(g);
+  const lb = srgbToLinear(b);
+
+  const l_ = Math.cbrt(0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb);
+  const m_ = Math.cbrt(0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb);
+  const s_ = Math.cbrt(0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb);
+
+  return {
+    L: 0.2104542553 * l_ + 0.793617785 * m_ - 0.0040720468 * s_,
+    a: 1.9779984951 * l_ - 2.428592205 * m_ + 0.4505937099 * s_,
+    b: 0.0259040371 * l_ + 0.7827717662 * m_ - 0.808675766 * s_,
+  };
+}
+
+function oklabToRgb({ L, a, b }: Oklab): [number, number, number] {
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = L - 0.0894841775 * a - 1.291485548 * b;
+
+  const l = l_ ** 3;
+  const m = m_ ** 3;
+  const s = s_ ** 3;
+
+  const lr = 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+  const lg = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+  const lb = -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s;
+
+  return [linearToSrgb(lr), linearToSrgb(lg), linearToSrgb(lb)];
+}
+
+interface WeightedLabPoint extends Oklab {
+  weight: number;
+}
+
+interface Cluster {
+  centroid: Oklab;
+  weight: number;
+}
+
+/**
+ * Weighted k-means in OKLab. Small K and few iterations are enough here —
+ * the input is a 48x48 sample (at most ~2300 points after filtering), not a
+ * full image, so this stays cheap even run synchronously on the UI thread.
+ */
+function kMeansOklab(points: WeightedLabPoint[], k: number, iterations = 8): Cluster[] {
+  if (points.length === 0) return [];
+  const K = Math.min(k, points.length);
+
+  const distSq = (p: Oklab, c: Oklab) =>
+    (p.L - c.L) ** 2 + (p.a - c.a) ** 2 + (p.b - c.b) ** 2;
+
+  // Seed centroids with weighted farthest-point sampling (a k-means++
+  // variant): start at the heaviest point, then repeatedly add whichever
+  // remaining point is both far from the existing centroids *and* heavy —
+  // spreads the initial guess across the real clusters instead of
+  // clumping, so the fixed iteration budget below actually converges.
+  const centroids: Oklab[] = [];
+  let heaviest = points[0];
+  for (const p of points) if (p.weight > heaviest.weight) heaviest = p;
+  centroids.push({ L: heaviest.L, a: heaviest.a, b: heaviest.b });
+
+  while (centroids.length < K) {
+    let best = points[0];
+    let bestScore = -Infinity;
+    for (const p of points) {
+      let minDist = Infinity;
+      for (const c of centroids) minDist = Math.min(minDist, distSq(p, c));
+      const score = minDist * p.weight;
+      if (score > bestScore) {
+        bestScore = score;
+        best = p;
+      }
+    }
+    centroids.push({ L: best.L, a: best.a, b: best.b });
+  }
+
+  const assignments = new Array(points.length).fill(0);
+  for (let iter = 0; iter < iterations; iter++) {
+    for (let i = 0; i < points.length; i++) {
+      let best = 0;
+      let bestDist = Infinity;
+      for (let c = 0; c < centroids.length; c++) {
+        const d = distSq(points[i], centroids[c]);
+        if (d < bestDist) {
+          bestDist = d;
+          best = c;
+        }
+      }
+      assignments[i] = best;
+    }
+
+    const sums = centroids.map(() => ({ L: 0, a: 0, b: 0, weight: 0 }));
+    for (let i = 0; i < points.length; i++) {
+      const s = sums[assignments[i]];
+      const p = points[i];
+      s.L += p.L * p.weight;
+      s.a += p.a * p.weight;
+      s.b += p.b * p.weight;
+      s.weight += p.weight;
+    }
+    for (let c = 0; c < centroids.length; c++) {
+      if (sums[c].weight > 0) {
+        centroids[c] = { L: sums[c].L / sums[c].weight, a: sums[c].a / sums[c].weight, b: sums[c].b / sums[c].weight };
+      }
+    }
+  }
+
+  const weights = centroids.map(() => 0);
+  for (let i = 0; i < points.length; i++) weights[assignments[i]] += points[i].weight;
+
+  return centroids.map((centroid, i) => ({ centroid, weight: weights[i] }));
+}
+
+const CLUSTER_COUNT = 6;
+
+// Gaussian falloff from the sample's center — album art almost always puts
+// the subject that reads as "the cover's color" in the middle, so a pixel
+// there should count for more than one buried in a corner, even before
+// saturation is factored in. Sigma of 0.6 (of the half-width) still leaves
+// corners contributing meaningfully (~20%), just not equally.
+const CENTER_WEIGHT_SIGMA = 0.6;
+
+function centerWeight(x: number, y: number, size: number): number {
+  const half = size / 2;
+  const dx = (x - half) / half;
+  const dy = (y - half) / half;
+  return Math.exp(-(dx * dx + dy * dy) / (2 * CENTER_WEIGHT_SIGMA * CENTER_WEIGHT_SIGMA));
+}
+
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -200,11 +356,11 @@ export async function extractDominantColors(
   }
   pixels = boxBlur(pixels, SAMPLE_SIZE, SAMPLE_SIZE);
 
-  // Coarse histogram: quantize into a small number of buckets so near-
-  // identical pixels (JPEG noise, gradients) collapse into one "color"
-  // instead of each being its own singleton bucket.
-  const buckets = new Map<string, { count: number; r: number; g: number; b: number }>();
-
+  // Build the point set k-means clusters on: every usable pixel's OKLab
+  // position, weighted by how close it sits to the sample's center. Same
+  // lightness/saturation pre-filter as before — a pixel with no real color
+  // shouldn't get to anchor a cluster just because there are a lot of them.
+  const points: WeightedLabPoint[] = [];
   for (let i = 0; i < pixels.length; i += 4) {
     const r = pixels[i];
     const g = pixels[i + 1];
@@ -216,39 +372,33 @@ export async function extractDominantColors(
     if (l < MIN_LIGHTNESS || l > MAX_LIGHTNESS) continue;
     if (s < MIN_USABLE_SATURATION) continue;
 
-    // Coarse on purpose: a smooth gradient background spans many nearby
-    // shades, splitting its count across buckets — too fine a grid lets a
-    // small flat-colored logo or text block "win" by concentrating into a
-    // single bucket despite covering far less actual area.
-    const key = `${r >> 5}-${g >> 5}-${b >> 5}`;
-    const bucket = buckets.get(key);
-    if (bucket) {
-      bucket.count++;
-      bucket.r += r;
-      bucket.g += g;
-      bucket.b += b;
-    } else {
-      buckets.set(key, { count: 1, r, g, b });
-    }
+    const pixelIndex = i / 4;
+    const x = pixelIndex % SAMPLE_SIZE;
+    const y = Math.floor(pixelIndex / SAMPLE_SIZE);
+
+    points.push({ ...rgbToOklab(r, g, b), weight: centerWeight(x, y, SAMPLE_SIZE) });
   }
 
-  // Rank by "visual weight" (pixel count times saturation), not raw pixel
-  // count — a small vivid logo or accent should be able to outrank a large
-  // neutral background, the way a human eye actually picks the "color" of
-  // a cover. Pure frequency counting let a stark black/white background
-  // always win against a small colorful focal point, no matter how vivid.
-  const ranked = Array.from(buckets.values())
-    .map((b) => {
-      const hsl = rgbToHsl(b.r / b.count, b.g / b.count, b.b / b.count);
-      return { count: b.count, hsl, weight: b.count * hsl.s };
-    })
-    .sort((a, b) => b.weight - a.weight);
-
-  if (ranked.length === 0) {
+  if (points.length === 0) {
     // Nothing colorful enough survived filtering — dark, washed-out, or
     // grayscale cover. Let the caller fall back to the default palette.
     return null;
   }
+
+  const clusters = kMeansOklab(points, CLUSTER_COUNT);
+
+  // Rank by "visual weight" (cluster weight times saturation), not raw
+  // weight — a small vivid logo or accent should be able to outrank a
+  // large neutral background, the way a human eye actually picks the
+  // "color" of a cover. Pure frequency counting let a stark black/white
+  // background always win against a small colorful focal point.
+  const ranked = clusters
+    .map((cluster) => {
+      const [r, g, b] = oklabToRgb(cluster.centroid);
+      const hsl = rgbToHsl(r, g, b);
+      return { hsl, weight: cluster.weight * hsl.s };
+    })
+    .sort((a, b) => b.weight - a.weight);
 
   const primary = ranked[0].hsl;
   const secondary =
