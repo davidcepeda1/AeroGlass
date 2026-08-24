@@ -197,7 +197,27 @@ el estándar de Linux para reproductores multimedia.
         ~300ms desde el Pause por D-Bus hasta el cambio de ícono), con un
         polling de respaldo cada 10s por si algún reproductor no emite señales
 - [ ] Barra de progreso / tiempo transcurrido de la canción
-- [ ] Selector de sesión cuando hay varias apps reproduciendo a la vez
+- [x] Selector de sesión cuando hay varias apps reproduciendo a la vez —
+      submenú dinámico en la bandeja del sistema ("Active Session"), solo
+      aparece con 2+ reproductores activos; reconecta el listener de eventos
+      en vivo al cambiar de sesión (no solo al primer cambio) — verificado en
+      vivo con dos reproductores reales simultáneos (Brave + VLC)
+- [ ] Búsqueda por voz: reconoce la voz del usuario, busca la canción en
+      Spotify o YouTube (vía Brave) y la reproduce, con un selector de destino
+      (Spotify vs YouTube) — objetivo: lo más rápido posible.
+  - Captura de voz: Web Speech API en el propio webview (rápido, sin
+    dependencias nuevas) si webkit2gtk la soporta en Linux; si no,
+    evaluar whisper.cpp local o una API cloud (ej. OpenAI) como
+    alternativa — impacta directamente la latencia percibida.
+  - Spotify: tiene Web API real (`search` + Connect API para reproducir),
+    requiere OAuth — la ruta más limpia de las dos.
+  - YouTube/Brave: no hay una API formal para buscar+reproducir en una
+    pestaña ya abierta; la opción realista es abrir una búsqueda de
+    YouTube en una nueva pestaña (menos "instantáneo" que Spotify).
+  - El selector podría ser un toggle en el propio widget o inferirse de
+    cuál ya está sonando/seleccionado como sesión activa.
+  - Suficientemente grande (claves de API, permisos de micrófono) como
+    para ser su propia fase, no un ítem suelto.
 - [x] Bandeja del sistema con menú (mostrar/ocultar, prev/play-pause/next,
       fijar siempre-encima, salir) — verificado a nivel D-Bus/StatusNotifierItem
 - [x] `visibleOnAllWorkspaces` para que no desaparezca al cambiar de escritorio
