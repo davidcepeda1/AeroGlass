@@ -9,7 +9,10 @@ const MAX_LIGHTNESS = 0.92;
 
 // Below this saturation the color reads as grayscale to the eye — not worth
 // theming the equalizer around, better to fall back to the default palette.
-const MIN_USABLE_SATURATION = 0.15;
+// Kept low on purpose: a muted-but-real dominant color (steel blue, olive)
+// should still win over a small vivid accent, so this only needs to catch
+// actual gray/noise, not anything with a hint of real hue.
+const MIN_USABLE_SATURATION = 0.08;
 
 // How different two candidate colors must be (in HSL space) before the
 // second one counts as a distinct "second dominant color" instead of just a
@@ -17,6 +20,11 @@ const MIN_USABLE_SATURATION = 0.15;
 const MIN_COLOR_SEPARATION = 0.12;
 
 const SAMPLE_SIZE = 48;
+
+// Some covers have a colored frame/padding around the actual art — sampling
+// only the central region avoids that border skewing the result. 6% off
+// each side is enough to drop a thin frame without cropping into content.
+const BORDER_MARGIN = 0.06;
 
 interface Hsl {
   h: number;
@@ -92,6 +100,47 @@ function colorDistance(a: Hsl, b: Hsl): number {
   return hueDistance(a.h, b.h) * 2 + Math.abs(a.s - b.s) + Math.abs(a.l - b.l) * 0.5;
 }
 
+/**
+ * Single-pass 3x3 box blur. JPEG chroma-subsampling artifacts on otherwise
+ * flat black/white covers can concentrate into a single-hue speckle that a
+ * per-pixel histogram then reads as "the dominant color" of an image that
+ * has no real color at all — smoothing that out here, before any color math
+ * runs, is cheaper and more reliable than trying to filter it out after the
+ * fact by raising the saturation floor (which also throws away genuinely
+ * muted-but-real dominant colors).
+ */
+function boxBlur(pixels: Uint8ClampedArray, width: number, height: number): Uint8ClampedArray {
+  const out = new Uint8ClampedArray(pixels.length);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      let r = 0;
+      let g = 0;
+      let b = 0;
+      let a = 0;
+      let n = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
+          const i = (ny * width + nx) * 4;
+          r += pixels[i];
+          g += pixels[i + 1];
+          b += pixels[i + 2];
+          a += pixels[i + 3];
+          n++;
+        }
+      }
+      const o = (y * width + x) * 4;
+      out[o] = r / n;
+      out[o + 1] = g / n;
+      out[o + 2] = b / n;
+      out[o + 3] = a / n;
+    }
+  }
+  return out;
+}
+
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -127,7 +176,19 @@ export async function extractDominantColors(
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
 
-  ctx.drawImage(img, 0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
+  const marginX = img.naturalWidth * BORDER_MARGIN;
+  const marginY = img.naturalHeight * BORDER_MARGIN;
+  ctx.drawImage(
+    img,
+    marginX,
+    marginY,
+    img.naturalWidth - marginX * 2,
+    img.naturalHeight - marginY * 2,
+    0,
+    0,
+    SAMPLE_SIZE,
+    SAMPLE_SIZE,
+  );
 
   let pixels: Uint8ClampedArray;
   try {
@@ -137,6 +198,7 @@ export async function extractDominantColors(
     // it back throws instead of returning garbage.
     return null;
   }
+  pixels = boxBlur(pixels, SAMPLE_SIZE, SAMPLE_SIZE);
 
   // Coarse histogram: quantize into a small number of buckets so near-
   // identical pixels (JPEG noise, gradients) collapse into one "color"
@@ -154,7 +216,11 @@ export async function extractDominantColors(
     if (l < MIN_LIGHTNESS || l > MAX_LIGHTNESS) continue;
     if (s < MIN_USABLE_SATURATION) continue;
 
-    const key = `${r >> 4}-${g >> 4}-${b >> 4}`;
+    // Coarse on purpose: a smooth gradient background spans many nearby
+    // shades, splitting its count across buckets — too fine a grid lets a
+    // small flat-colored logo or text block "win" by concentrating into a
+    // single bucket despite covering far less actual area.
+    const key = `${r >> 5}-${g >> 5}-${b >> 5}`;
     const bucket = buckets.get(key);
     if (bucket) {
       bucket.count++;
@@ -166,12 +232,17 @@ export async function extractDominantColors(
     }
   }
 
+  // Rank by "visual weight" (pixel count times saturation), not raw pixel
+  // count — a small vivid logo or accent should be able to outrank a large
+  // neutral background, the way a human eye actually picks the "color" of
+  // a cover. Pure frequency counting let a stark black/white background
+  // always win against a small colorful focal point, no matter how vivid.
   const ranked = Array.from(buckets.values())
-    .map((b) => ({
-      count: b.count,
-      hsl: rgbToHsl(b.r / b.count, b.g / b.count, b.b / b.count),
-    }))
-    .sort((a, b) => b.count - a.count);
+    .map((b) => {
+      const hsl = rgbToHsl(b.r / b.count, b.g / b.count, b.b / b.count);
+      return { count: b.count, hsl, weight: b.count * hsl.s };
+    })
+    .sort((a, b) => b.weight - a.weight);
 
   if (ranked.length === 0) {
     // Nothing colorful enough survived filtering — dark, washed-out, or
