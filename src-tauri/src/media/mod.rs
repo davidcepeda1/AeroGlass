@@ -64,9 +64,13 @@ pub enum MediaAction {
 #[cfg(target_os = "windows")]
 mod windows;
 #[cfg(target_os = "windows")]
-pub use windows::{get_song_info, list_sessions, send_control, watch_song_changes};
+pub use windows::{
+    get_song_info, list_sessions, reconnect_active_session, send_control, watch_song_changes,
+};
 
 #[cfg(target_os = "linux")]
 mod linux;
 #[cfg(target_os = "linux")]
-pub use linux::{get_song_info, list_sessions, send_control, watch_song_changes};
+pub use linux::{
+    get_song_info, list_sessions, reconnect_active_session, send_control, watch_song_changes,
+};

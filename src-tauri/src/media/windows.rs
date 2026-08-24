@@ -146,6 +146,21 @@ pub fn watch_song_changes(app: AppHandle) {
     });
 }
 
+/// Called right after the active session changes (picked from the tray, or
+/// reverted to auto). `run` only re-subscribes on WinRT's own
+/// `CurrentSessionChanged`, which doesn't fire just because *we* decided to
+/// follow a different (already-running) session — without this, switching
+/// wouldn't look instant: the widget would sit on stale data until that
+/// session's own properties happen to change, or the frontend's 10s
+/// fallback poll catches up. Re-subscribing to `current_session()` (which
+/// is selection-aware) and pushing its state immediately fixes both.
+pub fn reconnect_active_session(app: AppHandle) {
+    if let Some(session) = current_session() {
+        let _ = subscribe_session(&session, app.clone());
+    }
+    let _ = app.emit("song-changed", get_song_info());
+}
+
 fn subscribe_session(
     session: &GlobalSystemMediaTransportControlsSession,
     app: AppHandle,

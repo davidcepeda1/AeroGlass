@@ -140,6 +140,20 @@ pub fn watch_song_changes(app: AppHandle) {
     });
 }
 
+/// Called right after the active session changes (picked from the tray, or
+/// reverted to auto). `watch_once` blocks on *one* player's D-Bus event
+/// stream, so the long-lived loop above keeps listening to whichever player
+/// it originally attached to — without this, switching sessions wouldn't
+/// look instant: the widget would sit on stale data until the old player's
+/// stream happens to end, or the frontend's 10s fallback poll catches up.
+/// Firing a fresh one-shot `watch_once` immediately pushes the new
+/// selection's state and starts following *its* live events from now on.
+pub fn reconnect_active_session(app: AppHandle) {
+    std::thread::spawn(move || {
+        let _ = watch_once(&app);
+    });
+}
+
 fn watch_once(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     let player = active_player().ok_or("no active MPRIS player")?;
     let events = player.events()?;

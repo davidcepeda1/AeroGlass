@@ -27,8 +27,9 @@ fn list_sessions() -> Vec<SessionSummary> {
 }
 
 #[tauri::command]
-fn set_active_session(id: Option<String>) {
+fn set_active_session(app: tauri::AppHandle, id: Option<String>) {
     media::set_active_session(id);
+    media::reconnect_active_session(app);
 }
 
 const DEFAULT_VISUALIZER_STYLE: &str = "segmented";
@@ -246,6 +247,7 @@ pub fn run() {
             // actually changed.
             {
                 let refresh_tray = refresh_tray.clone();
+                let app_handle = app.handle().clone();
                 let mut last_ids: Vec<String> =
                     initial_sessions.iter().map(|s| s.id.clone()).collect();
                 let mut last_active = media::get_active_session();
@@ -265,6 +267,7 @@ pub fn run() {
                     if let Some(id) = &active {
                         if !ids.contains(id) {
                             media::set_active_session(None);
+                            media::reconnect_active_session(app_handle.clone());
                             active = None;
                         }
                     }
@@ -292,6 +295,7 @@ pub fn run() {
                         media::set_active_session(
                             (session_id != "auto").then(|| session_id.to_string()),
                         );
+                        media::reconnect_active_session(app_handle.clone());
                         refresh_tray();
                         return;
                     }
