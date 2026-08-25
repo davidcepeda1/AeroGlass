@@ -44,6 +44,27 @@ body,
   background: rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
+
+  /* Transición de disco al cambiar de canción: el ancho lo anima React
+     (ver App.tsx) fijando un px concreto mientras dura la transición;
+     border-radius/padding los controla por completo esta clase. */
+  transition:
+    width 0.32s ease,
+    border-radius 0.32s ease,
+    padding 0.32s ease;
+}
+
+/* Forma de "disco" que toma el widget completo mientras se detecta la
+   siguiente canción — ver .disc-overlay para el vinilo/CD/cassette que se
+   dibuja encima. El ancho real en px lo fuerza React vía style inline;
+   este 96px es solo el valor de respaldo antes de que React lo fije. */
+.card.card--disc {
+  width: 96px;
+  height: 96px;
+  min-width: 0;
+  padding: 0;
+  border-radius: 50%;
+  justify-content: center;
 }
 
 /* Capa de vidrio líquido que da profundidad al fondo */
@@ -90,6 +111,26 @@ body,
   align-items: center;
   gap: 16px;
   width: 100%;
+  transition: opacity 0.22s ease;
+}
+
+/* Hidden behind the spinning disc during a track-change transition instead
+   of the old per-block text fade. */
+.card--disc .content {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Vinyl/CD/cassette visual shown centered over the card while it's disc-
+   shaped — see DiscTransition.tsx. */
+.disc-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  pointer-events: none;
 }
 
 /* Portada / carátula de la canción */
@@ -408,36 +449,3 @@ button svg {
   margin-left: 2px; /* Corrección óptica para centrarlo visualmente */
 }
 
-/* =========================
-   Animaciones de fade
-   ========================= */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-}
-
-/* Clases para transiciones de entrada y salida de texto */
-.fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-.fade-out {
-  animation: fadeOut 0.3s ease-out forwards;
-}

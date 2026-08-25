@@ -4,13 +4,20 @@ import { listen } from "@tauri-apps/api/event";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import coverPlaceholder from "./assets/cover-placeholder.svg";
 import EqualizerBars, { type EqualizerStyle } from "./EqualizerBars";
+import DiscTransition, { type DiscType } from "./DiscTransition";
 import { useAlbumPalette } from "./lib/useAlbumPalette";
 import "./App.css";
 
 const EQ_STYLES: EqualizerStyle[] = ["segmented", "pill"];
+const DISC_TYPES: DiscType[] = ["vinyl", "cd", "cassette"];
 
 const WAVE_BARS = 12;
-const FADE_MS = 300;
+// Track-change transition: the pill collapses into a spinning disc, holds,
+// then expands back out. See the `phase` state machine below.
+const DISC_SIZE_PX = 96;
+const COLLAPSE_MS = 320;
+const SPIN_MIN_MS = 500;
+const EXPAND_MS = 320;
 // Safety net only: MPRIS/WinRT push updates instantly, but not every player
 // implements the change signals reliably, so poll slowly in the background
 // too, just so the widget can never go stale forever.
@@ -42,11 +49,24 @@ function randomLevels(count: number) {
   return Array.from({ length: count }, () => 0.15 + Math.random() * 0.75);
 }
 
+/** Picks a disc type at random, excluding whichever one played last — same
+ * "don't repeat the last one" spirit as the wave pattern regen, so the
+ * transition reads as varied instead of settling on one look. */
+function pickDiscType(exclude: DiscType | null): DiscType {
+  const options = DISC_TYPES.filter((t) => t !== exclude);
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+type TransitionPhase = "idle" | "collapsing" | "spinning" | "measuring" | "expanding";
+
 function App() {
   const [displaySong, setDisplaySong] = useState<SongInfo>(EMPTY_SONG);
-  const [fadeClass, setFadeClass] = useState<"fade-in" | "fade-out">(
-    "fade-in",
-  );
+  const [phase, setPhase] = useState<TransitionPhase>("idle");
+  const [discType, setDiscType] = useState<DiscType>("vinyl");
+  // null = let CSS `fit-content` size the card (normal state); a number is
+  // an inline px width locked in only while a transition is in flight, so
+  // the width transition has two concrete endpoints to animate between.
+  const [cardWidth, setCardWidth] = useState<number | null>(null);
   const [audioLevels, setAudioLevels] = useState<number[] | null>(null);
   const [decorativeLevels, setDecorativeLevels] = useState(() =>
     randomLevels(WAVE_BARS),
@@ -54,6 +74,10 @@ function App() {
   const [eqStyle, setEqStyle] = useState<EqualizerStyle>("segmented");
   const lastLevelsAtRef = useRef(0);
   const trackKeyRef = useRef<string | null>(null);
+  const cardRef = useRef<HTMLElement | null>(null);
+  const isTransitioningRef = useRef(false);
+  const pendingSongRef = useRef<SongInfo | null>(null);
+  const lastDiscTypeRef = useRef<DiscType | null>(null);
 
   useEffect(() => {
     invoke<string>("get_visualizer_style")
@@ -101,24 +125,91 @@ function App() {
     return () => clearInterval(id);
   }, [audioLevels]);
 
+  // Track-change transition: collapse the pill into a spinning disc, hold,
+  // then expand back out with the new track already loaded. Runs once per
+  // track change — if a change lands mid-transition, it just replaces the
+  // pending song so a burst of prev/next clicks doesn't restart the
+  // animation on every click, only shows the final destination.
+  const beginDiscTransition = (song: SongInfo) => {
+    pendingSongRef.current = song;
+    if (isTransitioningRef.current) return;
+    isTransitioningRef.current = true;
+
+    const nextDisc = pickDiscType(lastDiscTypeRef.current);
+    lastDiscTypeRef.current = nextDisc;
+    setDiscType(nextDisc);
+
+    const el = cardRef.current;
+    setCardWidth(el ? el.getBoundingClientRect().width : DISC_SIZE_PX);
+
+    // Two-step width change (lock current px, then flip to the target on
+    // the next frame) so the CSS transition has two concrete endpoints —
+    // animating straight from `fit-content` doesn't reliably interpolate.
+    requestAnimationFrame(() => {
+      setCardWidth(DISC_SIZE_PX);
+      setPhase("collapsing");
+    });
+
+    setTimeout(() => setPhase("spinning"), COLLAPSE_MS);
+
+    setTimeout(() => {
+      setDisplaySong(pendingSongRef.current ?? EMPTY_SONG);
+      setPhase("measuring");
+    }, COLLAPSE_MS + SPIN_MIN_MS);
+  };
+
+  // Once the new track's title/artist have committed to the DOM (still
+  // hidden behind the disc), measure the pill's natural width for that
+  // content and animate the expansion to exactly that size.
+  useEffect(() => {
+    if (phase !== "measuring") return;
+    const el = cardRef.current;
+    if (!el) {
+      setPhase("expanding");
+      return;
+    }
+
+    const prevCssText = el.style.cssText;
+    el.style.transition = "none";
+    // Inline styles win over the `.card--disc` class's fixed width
+    // regardless of specificity, so this measures the real fit-content
+    // size without the disc-shape override kicking back in.
+    el.style.width = "fit-content";
+    const naturalWidth = el.getBoundingClientRect().width;
+    el.style.cssText = prevCssText;
+    void el.offsetWidth; // flush the reset before re-enabling the transition
+
+    setCardWidth(naturalWidth);
+    setPhase("expanding");
+
+    const timeout = setTimeout(() => {
+      setCardWidth(null);
+      setPhase("idle");
+      isTransitioningRef.current = false;
+      pendingSongRef.current = null;
+    }, EXPAND_MS);
+
+    return () => clearTimeout(timeout);
+  }, [phase]);
+
   useEffect(() => {
     const applySong = (song: SongInfo) => {
       const key = trackKey(song);
 
-      // Same track (or first paint): update in place, no fade needed.
+      // Same track (or first paint): update in place, no transition needed.
       if (trackKeyRef.current === null || trackKeyRef.current === key) {
         trackKeyRef.current = key;
-        setDisplaySong(song);
+        if (isTransitioningRef.current) {
+          pendingSongRef.current = song;
+        } else {
+          setDisplaySong(song);
+        }
         return;
       }
 
-      // Different track: fade out, swap content, fade in.
+      // Different track: run the disc-morph transition.
       trackKeyRef.current = key;
-      setFadeClass("fade-out");
-      setTimeout(() => {
-        setDisplaySong(song);
-        setFadeClass("fade-in");
-      }, FADE_MS);
+      beginDiscTransition(song);
     };
 
     const fetchNow = () => {
@@ -150,9 +241,21 @@ function App() {
   const artist = hasTrack ? displaySong.artist : "—";
   const isPlaying = displaySong.isPlaying;
   const eqLevels = audioLevels ?? decorativeLevels;
+  const isDiscShape = phase === "collapsing" || phase === "spinning" || phase === "measuring";
 
   return (
-    <main className="card" data-tauri-drag-region>
+    <main
+      ref={cardRef}
+      className={`card${isDiscShape ? " card--disc" : ""}`}
+      style={cardWidth !== null ? { width: cardWidth } : undefined}
+      data-tauri-drag-region
+    >
+      {phase !== "idle" && (
+        <div className="disc-overlay">
+          <DiscTransition type={discType} accentColor={eqPalette.peakColor} />
+        </div>
+      )}
+
       <div className="content" data-tauri-drag-region>
         <div className="icon-container" data-tauri-drag-region>
           <img
@@ -162,7 +265,7 @@ function App() {
           />
         </div>
 
-        <div className={`text-info ${fadeClass}`} data-tauri-drag-region>
+        <div className="text-info" data-tauri-drag-region>
           <h1 data-tauri-drag-region>
             <span data-tauri-drag-region>{title}</span>
           </h1>
