@@ -283,6 +283,11 @@ function kMeansOklab(points: WeightedLabPoint[], k: number, iterations = 8): Clu
 
 const CLUSTER_COUNT = 6;
 
+// Clusters within this many hue-units (25° out of 360°, expressed on our
+// 0-1 hue scale) of each other get merged into one candidate before
+// ranking — see the comment where this is used.
+const HUE_MERGE_THRESHOLD = 25 / 360;
+
 // Gaussian falloff from the sample's center — album art almost always puts
 // the subject that reads as "the cover's color" in the middle, so a pixel
 // there should count for more than one buried in a corner, even before
@@ -387,17 +392,44 @@ export async function extractDominantColors(
 
   const clusters = kMeansOklab(points, CLUSTER_COUNT);
 
-  // Rank by "visual weight" (cluster weight times saturation), not raw
+  // K-means with a handful of clusters tends to split one real color family
+  // into several — a red-lit face has shadow-red and highlight-red pixels
+  // that sit at very different distances from the origin in OKLab's a/b
+  // plane (different chroma/lightness), so they land in separate clusters
+  // even though a person calls both of them "red". Left alone, that split
+  // vote lets neither fragment out-rank a single, larger, duller cluster
+  // that stayed unified (a dark background, say) — merging same-hue
+  // clusters back together first is what lets "red" compete as one voice.
+  const rawCandidates = clusters.map((cluster) => {
+    const [r, g, b] = oklabToRgb(cluster.centroid);
+    return { r, g, b, hsl: rgbToHsl(r, g, b), weight: cluster.weight };
+  });
+  rawCandidates.sort((a, b) => b.weight - a.weight);
+
+  const merged: typeof rawCandidates = [];
+  for (const candidate of rawCandidates) {
+    const target = merged.find(
+      (m) => hueDistance(m.hsl.h, candidate.hsl.h) <= HUE_MERGE_THRESHOLD,
+    );
+    if (target) {
+      const totalWeight = target.weight + candidate.weight;
+      target.r = (target.r * target.weight + candidate.r * candidate.weight) / totalWeight;
+      target.g = (target.g * target.weight + candidate.g * candidate.weight) / totalWeight;
+      target.b = (target.b * target.weight + candidate.b * candidate.weight) / totalWeight;
+      target.weight = totalWeight;
+      target.hsl = rgbToHsl(target.r, target.g, target.b);
+    } else {
+      merged.push({ ...candidate });
+    }
+  }
+
+  // Rank by "visual weight" (merged weight times saturation), not raw
   // weight — a small vivid logo or accent should be able to outrank a
   // large neutral background, the way a human eye actually picks the
   // "color" of a cover. Pure frequency counting let a stark black/white
   // background always win against a small colorful focal point.
-  const ranked = clusters
-    .map((cluster) => {
-      const [r, g, b] = oklabToRgb(cluster.centroid);
-      const hsl = rgbToHsl(r, g, b);
-      return { hsl, weight: cluster.weight * hsl.s };
-    })
+  const ranked = merged
+    .map((candidate) => ({ hsl: candidate.hsl, weight: candidate.weight * candidate.hsl.s }))
     .sort((a, b) => b.weight - a.weight);
 
   const primary = ranked[0].hsl;
