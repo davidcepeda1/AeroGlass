@@ -73,6 +73,28 @@ function isPlaceholderTitle(title: string): boolean {
   return normalized === "" || normalized === "unknown title" || normalized === "unknown";
 }
 
+// Brave's MPRIS bridge reports its own app icon as `mpris:artUrl` while a
+// YouTube tab's real thumbnail hasn't loaded yet, instead of leaving it
+// null — measured byte-identical across separate track changes, so it's a
+// fixed bundled asset, not per-video data. Fingerprinted by the base64
+// *payload* only (its declared mime type is unreliable — seen labeled both
+// "jpeg" and "png" for these same PNG bytes), matched by exact length +
+// prefix so this counts as "not ready yet" too, same as the "Unknown title"
+// placeholder — a `null` cover art is left alone since some real tracks
+// genuinely have none.
+const BRAVE_FALLBACK_ART_BASE64_PREFIX = "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAQAE";
+const BRAVE_FALLBACK_ART_BASE64_LENGTH = 40548;
+
+function isPlaceholderCoverArt(coverArt: string | null): boolean {
+  if (coverArt === null) return false;
+  const marker = coverArt.indexOf("base64,");
+  if (marker === -1) return false; // not a data URI at all (e.g. a file:// path) — can't be this fallback
+  const payload = coverArt.slice(marker + "base64,".length);
+  return (
+    payload.length === BRAVE_FALLBACK_ART_BASE64_LENGTH && payload.startsWith(BRAVE_FALLBACK_ART_BASE64_PREFIX)
+  );
+}
+
 function randomLevels(count: number) {
   return Array.from({ length: count }, () => 0.15 + Math.random() * 0.75);
 }
@@ -210,12 +232,13 @@ function App() {
 
     setTimeout(async () => {
       // Don't reveal a transient blank/placeholder ("no track") blip that a
-      // real player sends mid-switch — keep spinning until real title data
-      // lands, regardless of what isPlaying reports, up to the hard deadline.
+      // real player sends mid-switch — keep spinning until both the real
+      // title and the real cover art land, regardless of what isPlaying
+      // reports, up to the hard deadline.
       const waitStart = Date.now();
       while (transitionIdRef.current === myId) {
         const pending = pendingSongRef.current;
-        if (pending && !isPlaceholderTitle(pending.title)) break;
+        if (pending && !isPlaceholderTitle(pending.title) && !isPlaceholderCoverArt(pending.coverArt)) break;
         if (Date.now() - waitStart >= EMPTY_SONG_HARD_DEADLINE_MS) break;
         await delay(EMPTY_SONG_POLL_MS);
       }
