@@ -131,6 +131,15 @@ body,
   justify-content: center;
   padding: 10px;
   pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.22s ease;
+}
+
+/* Fades out during the expand phase (card--disc already removed by then)
+   instead of popping away the instant the transition finishes, so it
+   doesn't visibly overlap the content fading back in. */
+.card:not(.card--disc) .disc-overlay {
+  opacity: 0;
 }
 
 /* Portada / carátula de la canción */

@@ -181,14 +181,20 @@ function App() {
 
     setCardWidth(naturalWidth);
     setPhase("expanding");
+  }, [phase]);
 
+  // Separate from the "measuring" effect above: since that effect calls
+  // setPhase("expanding") itself, a single effect keyed on `phase` would
+  // immediately re-run on that same change and its cleanup would cancel
+  // this timeout before it ever fires, leaving the widget stuck mid-expand.
+  useEffect(() => {
+    if (phase !== "expanding") return;
     const timeout = setTimeout(() => {
       setCardWidth(null);
       setPhase("idle");
       isTransitioningRef.current = false;
       pendingSongRef.current = null;
     }, EXPAND_MS);
-
     return () => clearTimeout(timeout);
   }, [phase]);
 
