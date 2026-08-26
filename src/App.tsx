@@ -5,7 +5,7 @@ import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import coverPlaceholder from "./assets/cover-placeholder.svg";
 import EqualizerBars, { type EqualizerStyle } from "./EqualizerBars";
 import DiscTransition, { type DiscType } from "./DiscTransition";
-import { useAlbumPalette } from "./lib/useAlbumPalette";
+import { extractDominantColors, getEqualizerPalette, getPeakColor } from "./lib/albumColor";
 import "./App.css";
 
 const EQ_STYLES: EqualizerStyle[] = ["segmented", "pill"];
@@ -18,6 +18,17 @@ const DISC_SIZE_PX = 96;
 const COLLAPSE_MS = 320;
 const SPIN_MIN_MS = 500;
 const EXPAND_MS = 320;
+// Real players often clear metadata for a moment mid-switch (blank or
+// placeholder title/artist) before the new track's data lands. Browser
+// sources (Brave/YouTube) are slower at this than native apps (Spotify,
+// VLC), and can report a not-yet-loaded video as *not playing* too — so
+// "not playing" isn't a reliable signal that it's safe to settle early.
+// Keep spinning until real data shows up, no matter what isPlaying says;
+// the hard deadline below exists only as a last-resort safety net against a
+// genuinely broken/absent player, not as a normal way to resolve.
+const EMPTY_SONG_POLL_MS = 120;
+const EMPTY_SONG_HARD_DEADLINE_MS = 10_000;
+const PALETTE_TIMEOUT_MS = 900;
 // Safety net only: MPRIS/WinRT push updates instantly, but not every player
 // implements the change signals reliably, so poll slowly in the background
 // too, just so the widget can never go stale forever.
@@ -41,12 +52,46 @@ const EMPTY_SONG: SongInfo = {
   coverArt: null,
 };
 
+interface AlbumPalette {
+  stops: string[];
+  peakColor: string;
+}
+
 function trackKey(song: SongInfo) {
   return `${song.title}|${song.artist}`;
 }
 
+// Browser sources (Brave/Chromium's MPRIS bridge for a YouTube tab) don't
+// send a blank title while a video is still loading — they send the literal
+// placeholder "Unknown title" as if it were real data. Treating only an
+// empty string as "not ready" let that placeholder straight through as if
+// it were the next track, which is exactly the flash this is meant to
+// avoid — so anything that reads as a generic "no info yet" placeholder
+// counts as not-ready too, the same as a blank title.
+function isPlaceholderTitle(title: string): boolean {
+  const normalized = title.trim().toLowerCase();
+  return normalized === "" || normalized === "unknown title" || normalized === "unknown";
+}
+
 function randomLevels(count: number) {
   return Array.from({ length: count }, () => 0.15 + Math.random() * 0.75);
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// `extractDominantColors` already loads the cover image itself, so awaiting
+// it covers both "image loaded" and "color computed" — no separate preload
+// step needed. Raced against a timeout so a pathological image can't hang a
+// track-change transition forever; the timeout path just falls back to the
+// default (no-color) palette like a missing/failed cover already does.
+async function resolvePaletteFor(coverArt: string | null): Promise<AlbumPalette> {
+  const colors = await Promise.race([
+    extractDominantColors(coverArt),
+    delay(PALETTE_TIMEOUT_MS).then(() => null),
+  ]);
+  return { stops: getEqualizerPalette(colors), peakColor: getPeakColor(colors) };
 }
 
 /** Picks a disc type at random, excluding whichever one played last — same
@@ -61,6 +106,10 @@ type TransitionPhase = "idle" | "collapsing" | "spinning" | "measuring" | "expan
 
 function App() {
   const [displaySong, setDisplaySong] = useState<SongInfo>(EMPTY_SONG);
+  const [eqPalette, setEqPalette] = useState<AlbumPalette>(() => ({
+    stops: getEqualizerPalette(null),
+    peakColor: getPeakColor(null),
+  }));
   const [phase, setPhase] = useState<TransitionPhase>("idle");
   const [discType, setDiscType] = useState<DiscType>("vinyl");
   // null = let CSS `fit-content` size the card (normal state); a number is
@@ -78,6 +127,12 @@ function App() {
   const isTransitioningRef = useRef(false);
   const pendingSongRef = useRef<SongInfo | null>(null);
   const lastDiscTypeRef = useRef<DiscType | null>(null);
+  const transitionIdRef = useRef(0);
+  // Cover art we've already resolved a palette for — skips redundant
+  // extraction on same-track updates (isPlaying toggles, fallback polling)
+  // that don't change the art. The transition path updates this directly
+  // since it resolves the palette itself before revealing.
+  const paletteArtRef = useRef<string | null>(null);
 
   useEffect(() => {
     invoke<string>("get_visualizer_style")
@@ -134,6 +189,7 @@ function App() {
     pendingSongRef.current = song;
     if (isTransitioningRef.current) return;
     isTransitioningRef.current = true;
+    const myId = ++transitionIdRef.current;
 
     const nextDisc = pickDiscType(lastDiscTypeRef.current);
     lastDiscTypeRef.current = nextDisc;
@@ -152,8 +208,29 @@ function App() {
 
     setTimeout(() => setPhase("spinning"), COLLAPSE_MS);
 
-    setTimeout(() => {
-      setDisplaySong(pendingSongRef.current ?? EMPTY_SONG);
+    setTimeout(async () => {
+      // Don't reveal a transient blank/placeholder ("no track") blip that a
+      // real player sends mid-switch — keep spinning until real title data
+      // lands, regardless of what isPlaying reports, up to the hard deadline.
+      const waitStart = Date.now();
+      while (transitionIdRef.current === myId) {
+        const pending = pendingSongRef.current;
+        if (pending && !isPlaceholderTitle(pending.title)) break;
+        if (Date.now() - waitStart >= EMPTY_SONG_HARD_DEADLINE_MS) break;
+        await delay(EMPTY_SONG_POLL_MS);
+      }
+      if (transitionIdRef.current !== myId) return;
+
+      const finalSong = pendingSongRef.current ?? EMPTY_SONG;
+      // Resolve the real cover's color before revealing, so the equalizer
+      // never flashes the default palette then swaps — it's already right
+      // the instant the pill expands.
+      const palette = await resolvePaletteFor(finalSong.coverArt);
+      if (transitionIdRef.current !== myId) return;
+
+      paletteArtRef.current = finalSong.coverArt;
+      setEqPalette(palette);
+      setDisplaySong(finalSong);
       setPhase("measuring");
     }, COLLAPSE_MS + SPIN_MIN_MS);
   };
@@ -209,6 +286,13 @@ function App() {
           pendingSongRef.current = song;
         } else {
           setDisplaySong(song);
+          // Cover art didn't change (same track) — skip redundant extraction.
+          if (song.coverArt !== paletteArtRef.current) {
+            paletteArtRef.current = song.coverArt;
+            resolvePaletteFor(song.coverArt).then((palette) => {
+              if (paletteArtRef.current === song.coverArt) setEqPalette(palette);
+            });
+          }
         }
         return;
       }
@@ -239,8 +323,6 @@ function App() {
       clearInterval(fallback);
     };
   }, []);
-
-  const eqPalette = useAlbumPalette(displaySong.coverArt);
 
   const hasTrack = displaySong.title !== "";
   const title = hasTrack ? displaySong.title : "No track playing";

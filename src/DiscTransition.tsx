@@ -2,9 +2,9 @@ export type DiscType = "vinyl" | "cd" | "cassette";
 
 interface DiscTransitionProps {
   type: DiscType;
-  /** Accent tint pulled from the album palette (see `useAlbumPalette`), so
-   * the loading disc visually matches the equalizer instead of being a
-   * generic gray graphic. */
+  /** Accent tint pulled from the album palette (see `resolvePaletteFor` in
+   * App.tsx), so the loading disc visually matches the equalizer instead of
+   * being a generic gray graphic. */
   accentColor: string;
 }
 
