@@ -76,7 +76,15 @@ function Cd() {
         @keyframes disc-cd2-spin { to { transform: rotate(360deg); } }
         .disc-cd2-disc {
           position: absolute;
-          inset: 0;
+          /* Slightly larger than the rainbow/glare/vignette layers (which
+             stay at inset:0) on purpose: this WebKitGTK build renders those
+             gradients a few px past their own border-radius clip (confirmed
+             with diagnostic outlines — all layers share the exact same box,
+             yet the conic-gradient still paints outside it). Rather than
+             fight the renderer, the base disc is made just big enough that
+             whatever bleeds past the other layers still lands on more of
+             the same metal/rim, instead of on the transparent gap beyond. */
+          inset: -6px;
           border-radius: 50%;
           /* Hot highlight through to a dark gunmetal edge — higher contrast
              than an even, softly-lit gradient reads as brushed metal instead
@@ -101,12 +109,26 @@ function Cd() {
              progressively clearer toward the center. */
           -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent 0 21%, black 23% 100%);
           mask-image: radial-gradient(circle at 50% 50%, transparent 0 21%, black 23% 100%);
+          /* Forces its own GPU compositing layer — same fix as .icon-container
+             in App.css. Without this, WebKitGTK can rasterize a masked/
+             blended child's clip through a coarser pass than its own
+             border-radius, letting the rainbow band in ::before bleed past
+             the circle into the square corners around it. */
+          transform: translateZ(0);
+          isolation: isolate;
         }
-        .disc-cd2-disc::before {
-          /* iridescent band — orange/red arc at the bottom, green arc upper-
-             left, confined to a mid-radius ring instead of washing the
-             whole face */
-          content: "";
+        /* .disc-cd2-rainbow and .disc-cd2-glare used to be .disc-cd2-disc's
+           ::before/::after. In this WebKitGTK build, pseudo-elements with a
+           gradient background don't reliably clip to their own
+           border-radius — real sibling elements do (confirmed: this same
+           bug hit .disc-cd2-vignette too on this same disc before it was
+           converted, plus the vinyl surface here confirmed clean at the
+           equivalent test) — so both are real elements now, not ::before/
+           ::after, purely to get a clip WebKitGTK actually honors. */
+        .disc-cd2-rainbow {
+          /* Full-radius iridescent wash — deliberately not masked to a ring
+             here; the ring shape is carved afterward by .disc-cd2-vignette
+             painting plain metal back over it instead. */
           position: absolute;
           inset: 0;
           border-radius: 50%;
@@ -124,15 +146,33 @@ function Cd() {
             #4ddba0 332deg,
             transparent 355deg
           );
-          -webkit-mask-image: radial-gradient(circle, transparent 26%, black 44%, black 74%, transparent 88%);
-          mask-image: radial-gradient(circle, transparent 26%, black 44%, black 74%, transparent 88%);
           mix-blend-mode: hard-light;
           opacity: 0.95;
         }
-        .disc-cd2-disc::after {
+        .disc-cd2-vignette {
+          /* Paints plain metal back over the rainbow near the hub and near
+             the rim, carving it down to a mid-radius band without relying
+             on mask-image + blend-mode together. Approximates the base
+             disc's own tones at each radius so it reads as "more of the
+             same metal", not a visible patch. Also backstops .disc-cd2-glare
+             below by dimming it again near the rim. */
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          background: radial-gradient(
+            circle,
+            transparent 0%,
+            transparent 23%,
+            #dce0e6 27%,
+            transparent 35%,
+            transparent 78%,
+            #7a7f88 87%,
+            #565a61 100%
+          );
+        }
+        .disc-cd2-glare {
           /* tight, hot specular glare — a hard highlight reads as polished
              metal, a soft wide one reads as matte plastic */
-          content: "";
           position: absolute;
           inset: 0;
           border-radius: 50%;
@@ -154,6 +194,8 @@ function Cd() {
           );
           mix-blend-mode: overlay;
           opacity: 0.55;
+          transform: translateZ(0);
+          isolation: isolate;
         }
         .disc-cd2-hub-ring {
           position: absolute;
@@ -187,6 +229,9 @@ function Cd() {
       `}</style>
       <div className="disc-cd2-spin">
         <div className="disc-cd2-disc" />
+        <div className="disc-cd2-rainbow" />
+        <div className="disc-cd2-glare" />
+        <div className="disc-cd2-vignette" />
         <div className="disc-cd2-brushed" />
         <div className="disc-cd2-hub-ring g1" />
         <div className="disc-cd2-hub-ring g2" />
