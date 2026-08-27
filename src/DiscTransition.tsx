@@ -53,65 +53,183 @@ function Vinyl({ accentColor }: { accentColor: string }) {
   );
 }
 
-// Modeled on the classic "music file" CD-with-a-note icon (docs/formats/cd_design.png):
-// a glossy silver disc with an iridescent sheen swept across one side, a soft
-// blue glow around the spindle hole, and a black eighth note laid across it.
-// The note rotates together with the disc (one shared <g>) instead of sitting
-// on top as a static badge, so it reads as part of the same spinning object.
-function Cd({ accentColor }: { accentColor: string }) {
-  const sheenId = "disc-cd-sheen";
-  const hubId = "disc-cd-hub-glow";
+// Modeled precisely on the classic "music file" CD-with-a-note icon
+// (docs/formats/cd_design.png) — built and tuned as a standalone HTML/CSS
+// prototype first (matched side-by-side against the reference, including a
+// real headless-browser render for comparison), then ported in here as-is.
+// Uses CSS (conic-gradient, mask-image) rather than pure SVG because SVG has
+// no native conic-gradient — that's what gives the rainbow sheen its banding
+// and what punches the spindle hub into a genuinely see-through cutout
+// (tinted "glass" rings over whatever sits behind the disc) instead of a
+// solid painted circle.
+//
+// The note is deliberately its own non-rotating layer: unlike Vinyl/Cassette
+// where the whole graphic spins as one group, the note here sits fixed in
+// the disc's lower-left (docs/formats/idea1.png marks the spot) and just
+// pulses gently — only the disc + hub actually rotate underneath it.
+function Cd() {
   return (
-    <svg viewBox="0 0 100 100" width="100%" height="100%">
-      <defs>
-        {/* Swept from the lower-left (brightest, most saturated) toward the
-            upper-right (fading back to plain silver) — a physical CD's
-            diffraction sheen shows up as a bright arc on one side, not an
-            even wash across the whole label. */}
-        <linearGradient id={sheenId} x1="0.05" y1="0.95" x2="0.85" y2="0.1">
-          <stop offset="0%" stopColor="#ffd54a" stopOpacity={0.85} />
-          <stop offset="22%" stopColor="#ff7a5c" stopOpacity={0.6} />
-          <stop offset="42%" stopColor={accentColor} stopOpacity={0.55} />
-          <stop offset="62%" stopColor="#7cf0ff" stopOpacity={0.45} />
-          <stop offset="85%" stopColor="#c9cdd3" stopOpacity={0.15} />
-          <stop offset="100%" stopColor="#c9cdd3" stopOpacity={0} />
-        </linearGradient>
-        <radialGradient id={hubId} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#eef8ff" />
-          <stop offset="45%" stopColor="#bfe6ff" />
-          <stop offset="100%" stopColor="#bfe6ff" stopOpacity={0} />
-        </radialGradient>
-      </defs>
-      <g>
-        <circle cx={50} cy={50} r={48} fill="#d3d7dc" />
-        <circle cx={50} cy={50} r={48} fill={`url(#${sheenId})`} />
-        <circle cx={50} cy={50} r={48} fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth={0.5} />
-
-        {/* Spindle hub: a soft blue glow with a couple of thin rings, instead
-            of a flat gray ring, to match the reference's "glowing center". */}
-        <circle cx={50} cy={50} r={22} fill={`url(#${hubId})`} />
-        <circle cx={50} cy={50} r={16} fill="none" stroke="#8fd6ff" strokeWidth={1} opacity={0.6} />
-        <circle cx={50} cy={50} r={10} fill="#eaf7ff" />
-        <circle cx={50} cy={50} r={3} fill="#20232a" />
-
-        {/* Eighth note, notehead near the lower-left rising to a flag at the
-            upper-right — same diagonal placement as the reference icon. */}
-        <g fill="#20232a">
-          <ellipse cx={33} cy={70} rx={10} ry={7.5} transform="rotate(-24 33 70)" />
-          <path d="M 41 66 L 58 20 L 62 20 L 45 66 Z" />
-          <path d="M 58 20 C 72 22 76 34 64 41 C 69 31 65 23 58 20 Z" />
+    <div className="disc-cd2-wrap">
+      <style>{`
+        .disc-cd2-wrap { position: relative; width: 100%; height: 100%; }
+        .disc-cd2-spin { position: absolute; inset: 0; animation: disc-cd2-spin 2.4s linear infinite; }
+        @keyframes disc-cd2-spin { to { transform: rotate(360deg); } }
+        .disc-cd2-disc {
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          /* Hot highlight through to a dark gunmetal edge — higher contrast
+             than an even, softly-lit gradient reads as brushed metal instead
+             of pastel plastic. */
+          background: radial-gradient(
+            circle at 38% 32%,
+            #ffffff 0%,
+            #eef0f3 14%,
+            #c3c8d0 38%,
+            #9298a2 58%,
+            #6b7078 78%,
+            #4b4f56 100%
+          );
+          box-shadow:
+            inset 0 0 0 5px #10233a,
+            inset 0 0 0 6.5px rgba(255, 255, 255, 0.6),
+            inset 0 0 16px rgba(0, 0, 0, 0.35);
+          /* The whole hub assembly (not just a pinhole) is cut through the
+             disc — the reference's "rings" are tinted glass over the real
+             background, not opaque paint on solid silver: zooming the
+             reference shows its sky/cloud texture through every ring,
+             progressively clearer toward the center. */
+          -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent 0 21%, black 23% 100%);
+          mask-image: radial-gradient(circle at 50% 50%, transparent 0 21%, black 23% 100%);
+        }
+        .disc-cd2-disc::before {
+          /* iridescent band — orange/red arc at the bottom, green arc upper-
+             left, confined to a mid-radius ring instead of washing the
+             whole face */
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          background: conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            transparent 100deg,
+            #ff9a33 120deg,
+            #ff4d3d 136deg,
+            #ffae33 158deg,
+            transparent 180deg,
+            transparent 280deg,
+            #7ee055 300deg,
+            #c8f23d 314deg,
+            #4ddba0 332deg,
+            transparent 355deg
+          );
+          -webkit-mask-image: radial-gradient(circle, transparent 26%, black 44%, black 74%, transparent 88%);
+          mask-image: radial-gradient(circle, transparent 26%, black 44%, black 74%, transparent 88%);
+          mix-blend-mode: hard-light;
+          opacity: 0.95;
+        }
+        .disc-cd2-disc::after {
+          /* tight, hot specular glare — a hard highlight reads as polished
+             metal, a soft wide one reads as matte plastic */
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          background:
+            radial-gradient(circle at 74% 24%, rgba(255, 255, 255, 0.98), transparent 16%),
+            radial-gradient(circle at 74% 24%, rgba(255, 255, 255, 0.5), transparent 30%);
+        }
+        .disc-cd2-brushed {
+          /* fine concentric brush-mark rings, like a spun-metal surface */
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          background: repeating-radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.16) 0px,
+            rgba(255, 255, 255, 0.16) 1px,
+            rgba(20, 22, 26, 0.1) 1px,
+            rgba(20, 22, 26, 0.1) 2.4px
+          );
+          mix-blend-mode: overlay;
+          opacity: 0.55;
+        }
+        .disc-cd2-hub-ring {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+        }
+        /* Concentric tinted-glass rings — translucent fills, not borders on
+           an opaque shape, so they genuinely lighten toward the center:
+           outermost/grayest to innermost/clearest. */
+        .disc-cd2-hub-ring.g1 { width: 42%; height: 42%; background: rgba(196, 205, 218, 0.4); }
+        .disc-cd2-hub-ring.g2 { width: 32%; height: 32%; background: rgba(110, 170, 215, 0.45); }
+        .disc-cd2-hub-ring.g3 { width: 26%; height: 26%; background: rgba(225, 238, 250, 0.5); }
+        .disc-cd2-hub-ring.g4 { width: 20%; height: 20%; background: rgba(80, 160, 220, 0.55); }
+        .disc-cd2-hub-ring.g5 { width: 10%; height: 10%; background: rgba(255, 255, 255, 0.18); }
+        .disc-cd2-note {
+          position: absolute;
+          inset: 0;
+          overflow: visible;
+          transform-origin: 22% 63%;
+          animation: disc-cd2-pulse 1.8s ease-in-out infinite;
+        }
+        @keyframes disc-cd2-pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.06); opacity: 0.92; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .disc-cd2-spin, .disc-cd2-note { animation: none; }
+        }
+      `}</style>
+      <div className="disc-cd2-spin">
+        <div className="disc-cd2-disc" />
+        <div className="disc-cd2-brushed" />
+        <div className="disc-cd2-hub-ring g1" />
+        <div className="disc-cd2-hub-ring g2" />
+        <div className="disc-cd2-hub-ring g3" />
+        <div className="disc-cd2-hub-ring g4" />
+        <div className="disc-cd2-hub-ring g5" />
+      </div>
+      <svg className="disc-cd2-note" viewBox="0 0 200 200">
+        <defs>
+          <linearGradient id="disc-cd2-note-body" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#4a4a4e" />
+            <stop offset="42%" stopColor="#141417" />
+            <stop offset="100%" stopColor="#000000" />
+          </linearGradient>
+          <filter id="disc-cd2-note-shadow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation={4.5} />
+          </filter>
+        </defs>
+        {/* Notehead + stem drawn as two overlapping shapes deliberately
+            overlapped deep into each other (not just touching at the edge)
+            so the union reads as one seamless silhouette instead of leaving
+            a notch where a straight edge met the ellipse boundary. */}
+        <g transform="translate(-6,86) scale(0.42)">
+          <g transform="translate(5,7)" opacity={0.35} filter="url(#disc-cd2-note-shadow)">
+            <ellipse cx={52} cy={148} rx={23} ry={17} transform="rotate(-25 52 148)" fill="#021428" />
+            <path d="M55,144 L120,38 L132,41 L65,148 Z" fill="#021428" />
+            <path d="M120,38 C142,41 158,56 152,74 C147,90 126,92 118,76 C128,68 134,52 120,38 Z" fill="#021428" />
+          </g>
+          <g>
+            <ellipse cx={52} cy={148} rx={23} ry={17} transform="rotate(-25 52 148)" fill="url(#disc-cd2-note-body)" />
+            <path d="M55,144 L120,38 L132,41 L65,148 Z" fill="url(#disc-cd2-note-body)" />
+            <path
+              d="M120,38 C142,41 158,56 152,74 C147,90 126,92 118,76 C128,68 134,52 120,38 Z"
+              fill="url(#disc-cd2-note-body)"
+            />
+          </g>
+          <g opacity={0.85}>
+            <path d="M74,129 L124,42" stroke="#ffffff" strokeWidth={3.5} strokeLinecap="round" fill="none" opacity={0.75} />
+            <ellipse cx={44} cy={139} rx={9} ry={4.5} transform="rotate(-25 44 139)" fill="#ffffff" opacity={0.55} />
+          </g>
         </g>
-
-        <animateTransform
-          attributeName="transform"
-          type="rotate"
-          from="0 50 50"
-          to="360 50 50"
-          dur="2.4s"
-          repeatCount="indefinite"
-        />
-      </g>
-    </svg>
+      </svg>
+    </div>
   );
 }
 
@@ -128,15 +246,16 @@ function Cassette({ accentColor }: { accentColor: string }) {
 }
 
 /** Loading visual shown while the widget is mid-transition between tracks.
- * Purely presentational — the animations are SMIL (`animateTransform`) so
- * this component has no CSS dependency of its own and can be dropped
- * anywhere at any size. */
+ * Purely presentational and self-contained — Vinyl/Cassette animate via
+ * SMIL (`animateTransform`), Cd via an inline `<style>` tag it carries with
+ * it — either way there's no external CSS dependency, so this can be
+ * dropped anywhere at any size. */
 export default function DiscTransition({ type, accentColor }: DiscTransitionProps) {
   switch (type) {
     case "vinyl":
       return <Vinyl accentColor={accentColor} />;
     case "cd":
-      return <Cd accentColor={accentColor} />;
+      return <Cd />;
     case "cassette":
       return <Cassette accentColor={accentColor} />;
   }
