@@ -53,25 +53,55 @@ function Vinyl({ accentColor }: { accentColor: string }) {
   );
 }
 
+// Modeled on the classic "music file" CD-with-a-note icon (docs/formats/cd_design.png):
+// a glossy silver disc with an iridescent sheen swept across one side, a soft
+// blue glow around the spindle hole, and a black eighth note laid across it.
+// The note rotates together with the disc (one shared <g>) instead of sitting
+// on top as a static badge, so it reads as part of the same spinning object.
 function Cd({ accentColor }: { accentColor: string }) {
-  const gradientId = "disc-cd-sheen";
+  const sheenId = "disc-cd-sheen";
+  const hubId = "disc-cd-hub-glow";
   return (
     <svg viewBox="0 0 100 100" width="100%" height="100%">
       <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={accentColor} stopOpacity={0.75} />
-          <stop offset="30%" stopColor="#7cffe0" stopOpacity={0.35} />
-          <stop offset="55%" stopColor="#ffe97c" stopOpacity={0.3} />
-          <stop offset="80%" stopColor="#ff7ce0" stopOpacity={0.35} />
-          <stop offset="100%" stopColor={accentColor} stopOpacity={0.6} />
+        {/* Swept from the lower-left (brightest, most saturated) toward the
+            upper-right (fading back to plain silver) — a physical CD's
+            diffraction sheen shows up as a bright arc on one side, not an
+            even wash across the whole label. */}
+        <linearGradient id={sheenId} x1="0.05" y1="0.95" x2="0.85" y2="0.1">
+          <stop offset="0%" stopColor="#ffd54a" stopOpacity={0.85} />
+          <stop offset="22%" stopColor="#ff7a5c" stopOpacity={0.6} />
+          <stop offset="42%" stopColor={accentColor} stopOpacity={0.55} />
+          <stop offset="62%" stopColor="#7cf0ff" stopOpacity={0.45} />
+          <stop offset="85%" stopColor="#c9cdd3" stopOpacity={0.15} />
+          <stop offset="100%" stopColor="#c9cdd3" stopOpacity={0} />
         </linearGradient>
+        <radialGradient id={hubId} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#eef8ff" />
+          <stop offset="45%" stopColor="#bfe6ff" />
+          <stop offset="100%" stopColor="#bfe6ff" stopOpacity={0} />
+        </radialGradient>
       </defs>
       <g>
-        <circle cx={50} cy={50} r={48} fill="#c9cdd3" />
-        <circle cx={50} cy={50} r={48} fill={`url(#${gradientId})`} />
-        <circle cx={50} cy={50} r={48} fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth={0.5} />
-        <circle cx={50} cy={50} r={9} fill="#e8eaee" />
-        <circle cx={50} cy={50} r={3} fill="#141414" />
+        <circle cx={50} cy={50} r={48} fill="#d3d7dc" />
+        <circle cx={50} cy={50} r={48} fill={`url(#${sheenId})`} />
+        <circle cx={50} cy={50} r={48} fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth={0.5} />
+
+        {/* Spindle hub: a soft blue glow with a couple of thin rings, instead
+            of a flat gray ring, to match the reference's "glowing center". */}
+        <circle cx={50} cy={50} r={22} fill={`url(#${hubId})`} />
+        <circle cx={50} cy={50} r={16} fill="none" stroke="#8fd6ff" strokeWidth={1} opacity={0.6} />
+        <circle cx={50} cy={50} r={10} fill="#eaf7ff" />
+        <circle cx={50} cy={50} r={3} fill="#20232a" />
+
+        {/* Eighth note, notehead near the lower-left rising to a flag at the
+            upper-right — same diagonal placement as the reference icon. */}
+        <g fill="#20232a">
+          <ellipse cx={33} cy={70} rx={10} ry={7.5} transform="rotate(-24 33 70)" />
+          <path d="M 41 66 L 58 20 L 62 20 L 45 66 Z" />
+          <path d="M 58 20 C 72 22 76 34 64 41 C 69 31 65 23 58 20 Z" />
+        </g>
+
         <animateTransform
           attributeName="transform"
           type="rotate"
