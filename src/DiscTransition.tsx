@@ -320,7 +320,12 @@ function CassetteRetro() {
           5 rivets arced (center-high), plus two more rivets outside it at
           the body's own bottom corners. Both details the flat dot row
           before this was missing entirely. */}
-      <path d="M23,70 L77,70 L69,85 L31,85 Z" fill="#18181d" stroke="#e2542e" strokeWidth={1.4} />
+      {/* Fill and outline are two separate paths on purpose: the reference's
+          accent border only runs along the top edge and the two diagonal
+          sides — the bottom edge is left unstroked, blending straight into
+          the body's own border instead of double-lining it. */}
+      <path d="M23,70 L77,70 L69,85 L31,85 Z" fill="#18181d" />
+      <path d="M31,85 L23,70 L77,70 L69,85" fill="none" stroke="#e2542e" strokeWidth={1.4} strokeLinejoin="round" />
       <circle cx={35} cy={82} r={1.6} fill="#0a0a0d" />
       <circle cx={43} cy={78.5} r={1.6} fill="#0a0a0d" />
       <circle cx={50} cy={76} r={1.6} fill="#0a0a0d" />
@@ -371,7 +376,9 @@ function CassetteColor() {
       {/* Bottom trapezoid panel — wider at the top, narrowing to the body's
           bottom edge, with its 5 rivets arced (center-high, donut style)
           instead of the flat zigzag-outline row this replaces. */}
-      <path d="M22,68 L78,68 L69,85 L31,85 Z" fill="#c9cbce" stroke="#1c1c1f" strokeWidth={2} />
+      {/* Same open-bottom treatment as CassetteRetro's panel above. */}
+      <path d="M22,68 L78,68 L69,85 L31,85 Z" fill="#c9cbce" />
+      <path d="M31,85 L22,68 L78,68 L69,85" fill="none" stroke="#1c1c1f" strokeWidth={2} strokeLinejoin="round" />
       <circle cx={36} cy={80} r={1.8} fill="#1c1c1f" />
       <circle cx={44} cy={77} r={1.8} fill="#1c1c1f" />
       <circle cx={50} cy={74} r={1.8} fill="#1c1c1f" />
