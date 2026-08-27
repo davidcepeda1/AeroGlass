@@ -9,7 +9,7 @@ import { extractDominantColors, getEqualizerPalette, getPeakColor } from "./lib/
 import "./App.css";
 
 const EQ_STYLES: EqualizerStyle[] = ["segmented", "pill"];
-const DISC_TYPES: DiscType[] = ["vinyl", "cd", "cassette"];
+const DISC_TYPES: DiscType[] = ["vinyl", "cd", "cassette1", "cassette2"];
 
 const WAVE_BARS = 12;
 // Track-change transition: the pill collapses into a spinning disc, holds,

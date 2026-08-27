@@ -1,4 +1,4 @@
-export type DiscType = "vinyl" | "cd" | "cassette";
+export type DiscType = "vinyl" | "cd" | "cassette1" | "cassette2";
 
 interface DiscTransitionProps {
   type: DiscType;
@@ -8,20 +8,40 @@ interface DiscTransitionProps {
   accentColor: string;
 }
 
-function Reel({ cx, cy }: { cx: number; cy: number }) {
+/** A cassette's spool reel: a white/cream hub with a dark 8-point gear cross,
+ * the only part of either cassette design that actually spins — the body
+ * stays put, same as a real tape deck. */
+function GearReel({
+  cx,
+  cy,
+  r,
+  hub,
+  spoke,
+}: {
+  cx: number;
+  cy: number;
+  r: number;
+  hub: string;
+  spoke: string;
+}) {
   return (
     <g transform={`translate(${cx},${cy})`}>
       <g>
-        <circle r={6} fill="#3a3a40" />
-        <rect x={-0.8} y={-6} width={1.6} height={12} fill="#1b1b1f" />
-        <rect x={-6} y={-0.8} width={12} height={1.6} fill="#1b1b1f" />
-        <circle r={1.6} fill="#0e0e10" />
+        <circle r={r} fill={hub} />
+        <circle r={r} fill="none" stroke={spoke} strokeWidth={1} opacity={0.5} />
+        <g stroke={spoke} strokeWidth={r * 0.19}>
+          <line x1={0} y1={-r * 0.7} x2={0} y2={r * 0.7} />
+          <line x1={-r * 0.7} y1={0} x2={r * 0.7} y2={0} />
+          <line x1={-r * 0.5} y1={-r * 0.5} x2={r * 0.5} y2={r * 0.5} />
+          <line x1={-r * 0.5} y1={r * 0.5} x2={r * 0.5} y2={-r * 0.5} />
+        </g>
+        <circle r={r * 0.22} fill={spoke} />
         <animateTransform
           attributeName="transform"
           type="rotate"
-          from="0 0 0"
-          to="360 0 0"
-          dur="1.3s"
+          from="0"
+          to="360"
+          dur="1.6s"
           repeatCount="indefinite"
         />
       </g>
@@ -278,14 +298,73 @@ function Cd() {
   );
 }
 
-function Cassette({ accentColor }: { accentColor: string }) {
+// Modeled on docs/formats/cassette_design_1.png: a dark retro shell, a small
+// orange indicator square, a cream label window with a diagonal tape-through
+// hint between the reels, and an orange "duration stripe" underneath. Static
+// body (real cassettes don't spin as a whole) — only the two reels turn.
+function CassetteRetro() {
   return (
     <svg viewBox="0 0 100 100" width="100%" height="100%">
-      <circle cx={50} cy={50} r={48} fill="#1b1b1f" stroke={accentColor} strokeWidth={3} />
-      <rect x={25} y={36} width={50} height={28} rx={4} fill="#0e0e10" stroke="rgba(255,255,255,0.15)" />
-      <rect x={30} y={41} width={40} height={8} fill="#2a2a2f" />
-      <Reel cx={38} cy={58} />
-      <Reel cx={62} cy={58} />
+      <rect x={11} y={14} width={78} height={72} rx={8} fill="#1c1c22" stroke="#0a0a0d" strokeWidth={1} />
+      <rect x={18} y={21} width={11} height={8} rx={1.5} fill="#e2542e" />
+      <rect x={33} y={21} width={38} height={8} rx={1.5} fill="#2c2c33" />
+      <rect x={18} y={33} width={64} height={25} rx={2} fill="#f1e7d8" />
+      <g stroke="#e2542e" strokeWidth={1.6} opacity={0.6}>
+        <line x1={45} y1={36} x2={39} y2={55} />
+        <line x1={49.5} y1={36} x2={43.5} y2={55} />
+        <line x1={54} y1={36} x2={48} y2={55} />
+      </g>
+      <rect x={18} y={61} width={64} height={6} rx={2} fill="#e2542e" />
+      <circle cx={18} cy={80} r={1.6} fill="#0a0a0d" />
+      <circle cx={32} cy={82} r={1.6} fill="#0a0a0d" />
+      <circle cx={50} cy={83} r={1.6} fill="#0a0a0d" />
+      <circle cx={68} cy={82} r={1.6} fill="#0a0a0d" />
+      <circle cx={82} cy={80} r={1.6} fill="#0a0a0d" />
+      <GearReel cx={34} cy={45.5} r={8.5} hub="#f1e7d8" spoke="#0a0a0d" />
+      <GearReel cx={66} cy={45.5} r={8.5} hub="#f1e7d8" spoke="#0a0a0d" />
+    </svg>
+  );
+}
+
+// Modeled on docs/formats/cassette_design_2.png: a light gray shell, a
+// striped label window (cream/teal/yellow/orange/red), the black spool
+// housing with its tapered tape-window notches, corner rivets, a bottom
+// notch tab, and the little side-locking nubs. Same static-body rule as
+// CassetteRetro — only the reels spin.
+function CassetteColor() {
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%">
+      <defs>
+        <clipPath id="disc-cassette2-stripe-clip">
+          <rect x={17} y={22} width={66} height={42} rx={4} />
+        </clipPath>
+      </defs>
+      <rect x={9} y={15} width={82} height={70} rx={9} fill="#c9cbce" stroke="#1c1c1f" strokeWidth={2.4} />
+      <rect x={17} y={22} width={66} height={42} rx={4} fill="#141416" />
+      <g clipPath="url(#disc-cassette2-stripe-clip)">
+        <rect x={17} y={22} width={66} height={9} fill="#f1efe9" />
+        <rect x={17} y={31} width={66} height={7} fill="#1f9e93" />
+        <rect x={17} y={38} width={66} height={7} fill="#f5b731" />
+        <rect x={17} y={45} width={66} height={7} fill="#f0812e" />
+        <rect x={17} y={52} width={66} height={12} fill="#e8412a" />
+      </g>
+      <rect x={21} y={33} width={58} height={20} rx={4} fill="#141416" />
+      <path d="M45,38 L43,48 L48,48 L49,38 Z" fill="#e9e3d6" />
+      <path d="M55,38 L57,48 L52,48 L51,38 Z" fill="#e9e3d6" />
+      <circle cx={14} cy={21} r={1.8} fill="#1c1c1f" />
+      <circle cx={86} cy={21} r={1.8} fill="#1c1c1f" />
+      <circle cx={14} cy={79} r={1.8} fill="#1c1c1f" />
+      <circle cx={86} cy={79} r={1.8} fill="#1c1c1f" />
+      <path d="M30,68 L38,76 L62,76 L70,68" fill="none" stroke="#1c1c1f" strokeWidth={2} />
+      <circle cx={34} cy={76} r={1.8} fill="#1c1c1f" />
+      <circle cx={44} cy={76} r={1.8} fill="#1c1c1f" />
+      <circle cx={50} cy={72} r={1.8} fill="#1c1c1f" />
+      <circle cx={56} cy={76} r={1.8} fill="#1c1c1f" />
+      <circle cx={66} cy={76} r={1.8} fill="#1c1c1f" />
+      <rect x={4} y={44} width={7} height={13} rx={2} fill="#c9cbce" stroke="#1c1c1f" strokeWidth={2.4} />
+      <rect x={89} y={44} width={7} height={13} rx={2} fill="#c9cbce" stroke="#1c1c1f" strokeWidth={2.4} />
+      <GearReel cx={35} cy={44} r={8} hub="#ffffff" spoke="#141416" />
+      <GearReel cx={65} cy={44} r={8} hub="#ffffff" spoke="#141416" />
     </svg>
   );
 }
@@ -301,7 +380,9 @@ export default function DiscTransition({ type, accentColor }: DiscTransitionProp
       return <Vinyl accentColor={accentColor} />;
     case "cd":
       return <Cd />;
-    case "cassette":
-      return <Cassette accentColor={accentColor} />;
+    case "cassette1":
+      return <CassetteRetro />;
+    case "cassette2":
+      return <CassetteColor />;
   }
 }
