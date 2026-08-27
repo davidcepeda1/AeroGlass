@@ -315,22 +315,25 @@ function CassetteRetro() {
         <line x1={54} y1={36} x2={48} y2={55} />
       </g>
       <rect x={18} y={61} width={64} height={6} rx={2} fill="#e2542e" />
-      {/* Bottom trapezoid panel — wider at the top, narrowing toward the
-          body's bottom edge, outlined in the same orange accent — with its
-          5 rivets arced (center-high), plus two more rivets outside it at
-          the body's own bottom corners. Both details the flat dot row
-          before this was missing entirely. */}
+      {/* Bottom trapezoid panel — measured off the reference (docs/formats/
+          cassette_design_1.png) with a grid overlay: it's narrow at the top
+          and opens wider toward the body's bottom edge, like half of a long,
+          wide hexagon — not the reverse (wide-top-narrowing-down reads as a
+          triangle closing to a point, which isn't what the art shows).
+          Outlined in the same orange accent — with its 5 rivets arced
+          (center-high), plus two more rivets outside it at the body's own
+          bottom corners. */}
       {/* Fill and outline are two separate paths on purpose: the reference's
           accent border only runs along the top edge and the two diagonal
           sides — the bottom edge is left unstroked, blending straight into
           the body's own border instead of double-lining it. */}
-      <path d="M23,70 L77,70 L69,85 L31,85 Z" fill="#18181d" />
-      <path d="M31,85 L23,70 L77,70 L69,85" fill="none" stroke="#e2542e" strokeWidth={1.4} strokeLinejoin="round" />
-      <circle cx={35} cy={82} r={1.6} fill="#0a0a0d" />
-      <circle cx={43} cy={78.5} r={1.6} fill="#0a0a0d" />
+      <path d="M32,69 L69,69 L81,85 L20,85 Z" fill="#18181d" />
+      <path d="M20,85 L32,69 L69,69 L81,85" fill="none" stroke="#e2542e" strokeWidth={1.4} strokeLinejoin="round" />
+      <circle cx={30} cy={82} r={1.6} fill="#0a0a0d" />
+      <circle cx={40} cy={78.5} r={1.6} fill="#0a0a0d" />
       <circle cx={50} cy={76} r={1.6} fill="#0a0a0d" />
-      <circle cx={57} cy={78.5} r={1.6} fill="#0a0a0d" />
-      <circle cx={65} cy={82} r={1.6} fill="#0a0a0d" />
+      <circle cx={60} cy={78.5} r={1.6} fill="#0a0a0d" />
+      <circle cx={70} cy={82} r={1.6} fill="#0a0a0d" />
       <circle cx={16} cy={81} r={1.6} fill="#0a0a0d" />
       <circle cx={84} cy={81} r={1.6} fill="#0a0a0d" />
       <GearReel cx={34} cy={45.5} r={8.5} hub="#f1e7d8" spoke="#0a0a0d" />
@@ -373,18 +376,19 @@ function CassetteColor() {
       <circle cx={14} cy={79} r={0.8} fill="#c9cbce" />
       <circle cx={86} cy={79} r={2} fill="#1c1c1f" />
       <circle cx={86} cy={79} r={0.8} fill="#c9cbce" />
-      {/* Bottom trapezoid panel — wider at the top, narrowing to the body's
-          bottom edge, with its 5 rivets arced (center-high, donut style)
-          instead of the flat zigzag-outline row this replaces. */}
+      {/* Bottom trapezoid panel — same reference-measured shape as
+          CassetteRetro's: narrow at the top, opening wider toward the
+          body's bottom edge (half a long hexagon, not a triangle) — with
+          its 5 rivets arced (center-high, donut style). */}
       {/* Same open-bottom treatment as CassetteRetro's panel above. */}
-      <path d="M22,68 L78,68 L69,85 L31,85 Z" fill="#c9cbce" />
-      <path d="M31,85 L22,68 L78,68 L69,85" fill="none" stroke="#1c1c1f" strokeWidth={2} strokeLinejoin="round" />
-      <circle cx={36} cy={80} r={1.8} fill="#1c1c1f" />
-      <circle cx={44} cy={77} r={1.8} fill="#1c1c1f" />
+      <path d="M33,68 L67,68 L82,85 L19,85 Z" fill="#c9cbce" />
+      <path d="M19,85 L33,68 L67,68 L82,85" fill="none" stroke="#1c1c1f" strokeWidth={2} strokeLinejoin="round" />
+      <circle cx={29} cy={80} r={1.8} fill="#1c1c1f" />
+      <circle cx={40} cy={77} r={1.8} fill="#1c1c1f" />
       <circle cx={50} cy={74} r={1.8} fill="#1c1c1f" />
       <circle cx={50} cy={74} r={0.7} fill="#c9cbce" />
-      <circle cx={56} cy={77} r={1.8} fill="#1c1c1f" />
-      <circle cx={64} cy={80} r={1.8} fill="#1c1c1f" />
+      <circle cx={60} cy={77} r={1.8} fill="#1c1c1f" />
+      <circle cx={71} cy={80} r={1.8} fill="#1c1c1f" />
       <rect x={4} y={44} width={7} height={13} rx={2} fill="#c9cbce" stroke="#1c1c1f" strokeWidth={2.4} />
       <rect x={89} y={44} width={7} height={13} rx={2} fill="#c9cbce" stroke="#1c1c1f" strokeWidth={2.4} />
       <GearReel cx={35} cy={44} r={8} hub="#ffffff" spoke="#141416" />
