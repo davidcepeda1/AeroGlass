@@ -310,17 +310,29 @@ function CassetteRetro() {
   return (
     <svg viewBox="0 0 100 100" width="100%" height="100%">
       <rect x={11} y={14} width={78} height={72} rx={9} fill="#1c1c22" stroke="#0a0a0d" strokeWidth={1} />
+      {/* One single rounded frame running cream / orange / cream again — not
+          three separately-bordered pieces stacked with gaps. The reference
+          traces one continuous outline the whole way down to the "90 min"
+          row; only the fill color changes along it, via a clip instead of
+          separate shapes. */}
+      <defs>
+        <clipPath id="disc-cassette1-frame-clip">
+          <rect x={17} y={19} width={66} height={46} rx={3} />
+        </clipPath>
+      </defs>
+      <g clipPath="url(#disc-cassette1-frame-clip)">
+        <rect x={17} y={19} width={66} height={11} fill="#f1e7d8" />
+        <rect x={17} y={30} width={66} height={28} fill="#e2542e" />
+        <rect x={17} y={58} width={66} height={7} fill="#f1e7d8" />
+      </g>
       <rect x={18} y={21} width={11} height={8} rx={1.5} fill="#e2542e" />
-      {/* Label strip: cream, with faint ruled lines, like a paper insert —
-          not the dark filler this used to be. */}
-      <rect x={33} y={21} width={38} height={8} rx={1.5} fill="#f1e7d8" />
       <line x1={36} y1={23.5} x2={68} y2={23.5} stroke="#c9bfae" strokeWidth={0.6} />
       <line x1={36} y1={26.5} x2={68} y2={26.5} stroke="#c9bfae" strokeWidth={0.6} />
-      {/* Orange backing sits slightly taller/wider than the dark window on
-          top of it, so it only peeks out as a thin sliver top and bottom —
-          matching the reference instead of a solid orange fill. */}
-      <rect x={17} y={31} width={66} height={28} rx={2} fill="#e2542e" />
-      <rect x={18} y={33} width={64} height={24} rx={1} fill="#111114" />
+      {/* Reel window: a smaller dark rect inset within the frame's orange
+          band, not a separate bordered panel of its own — narrowed to match
+          CassetteColor's proportions so orange shows as a margin on the
+          sides too, not just top/bottom. */}
+      <rect x={21} y={33} width={58} height={24} rx={1} fill="#111114" />
       {/* Fan of curved light catches between the reels — the reference
           shows nested arcs (like a shutter or the tape itself catching
           light), not straight diagonal lines. */}
@@ -331,9 +343,10 @@ function CassetteRetro() {
         <path d="M53,38 Q51.3,45.5 53,53" stroke="#706e6c" strokeWidth={1} opacity={0.4} />
         <path d="M56,38 Q54.7,45.5 56,53" stroke="#4c4a49" strokeWidth={0.9} opacity={0.3} />
       </g>
-      {/* Duration pill: shorter and right-aligned like the reference's "90
-          min" label + accent bar, instead of one full-width stripe. */}
-      <rect x={45} y={61} width={37} height={6} rx={2} fill="#e2542e" />
+      {/* Duration pill: sits inside the frame's bottom cream band (not
+          floating below it), shorter and right-aligned like the
+          reference's "90 min" label + accent bar. */}
+      <rect x={45} y={59} width={35} height={5} rx={2} fill="#e2542e" />
       {/* Bottom trapezoid panel — measured off the reference (docs/formats/
           cassette_design_1.png) with a grid overlay: it's narrow at the top
           and opens wider toward the body's bottom edge, like half of a long,
@@ -357,8 +370,8 @@ function CassetteRetro() {
       <circle cx={84} cy={81} r={1.6} fill="#0a0a0d" />
       {/* White hub with a dark maroon ring/spokes — the reference's reels,
           not the cream-on-near-black pair this used to have. */}
-      <GearReel cx={34} cy={45.5} r={8.5} hub="#ffffff" spoke="#7a2f2f" />
-      <GearReel cx={66} cy={45.5} r={8.5} hub="#ffffff" spoke="#7a2f2f" />
+      <GearReel cx={35} cy={45.5} r={8} hub="#ffffff" spoke="#7a2f2f" />
+      <GearReel cx={65} cy={45.5} r={8} hub="#ffffff" spoke="#7a2f2f" />
     </svg>
   );
 }
