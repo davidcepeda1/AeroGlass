@@ -310,6 +310,12 @@ function CassetteRetro() {
   return (
     <svg viewBox="0 0 100 100" width="100%" height="100%">
       <rect x={11} y={14} width={78} height={72} rx={9} fill="#1c1c22" stroke="#0a0a0d" strokeWidth={1} />
+      {/* Side-locking nubs, borrowed from CassetteColor's reference (this
+          design's own source art doesn't show them, but they read as the
+          same structural detail) — positioned low, level with the bottom
+          trapezoid panel, same as there. */}
+      <rect x={6} y={62} width={7} height={13} rx={2} fill="#1c1c22" stroke="#0a0a0d" strokeWidth={1} />
+      <rect x={87} y={62} width={7} height={13} rx={2} fill="#1c1c22" stroke="#0a0a0d" strokeWidth={1} />
       {/* One single rounded frame running cream / orange / cream again — not
           three separately-bordered pieces stacked with gaps. The reference
           traces one continuous outline the whole way down to the "90 min"
@@ -423,8 +429,11 @@ function CassetteColor() {
       <circle cx={50} cy={74} r={0.7} fill="#c9cbce" />
       <circle cx={60} cy={77} r={1.8} fill="#1c1c1f" />
       <circle cx={71} cy={80} r={1.8} fill="#1c1c1f" />
-      <rect x={4} y={44} width={7} height={13} rx={2} fill="#c9cbce" stroke="#1c1c1f" strokeWidth={2.4} />
-      <rect x={89} y={44} width={7} height={13} rx={2} fill="#c9cbce" stroke="#1c1c1f" strokeWidth={2.4} />
+      {/* Side-locking nubs — measured off the reference with a grid overlay:
+          they sit low, roughly level with the bottom trapezoid panel, not
+          centered on the reels. */}
+      <rect x={4} y={61} width={7} height={13} rx={2} fill="#c9cbce" stroke="#1c1c1f" strokeWidth={2.4} />
+      <rect x={89} y={61} width={7} height={13} rx={2} fill="#c9cbce" stroke="#1c1c1f" strokeWidth={2.4} />
       <GearReel cx={35} cy={44} r={8} hub="#ffffff" spoke="#141416" />
       <GearReel cx={65} cy={44} r={8} hub="#ffffff" spoke="#141416" />
     </svg>

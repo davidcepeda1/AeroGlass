@@ -132,8 +132,8 @@ function App() {
     stops: getEqualizerPalette(null),
     peakColor: getPeakColor(null),
   }));
-  const [phase, setPhase] = useState<TransitionPhase>("idle");
-  const [discType, setDiscType] = useState<DiscType>("vinyl");
+  const [phase, setPhase] = useState<TransitionPhase>("spinning"); // TEMP: force-preview the disc
+  const [discType, setDiscType] = useState<DiscType>("cassette2"); // TEMP: force-preview the disc
   // null = let CSS `fit-content` size the card (normal state); a number is
   // an inline px width locked in only while a transition is in flight, so
   // the width transition has two concrete endpoints to animate between.
