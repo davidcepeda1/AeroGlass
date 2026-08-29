@@ -298,23 +298,42 @@ function Cd() {
   );
 }
 
-// Modeled on docs/formats/cassette_design_1.png: a dark retro shell, a small
-// orange indicator square, a cream label window with a diagonal tape-through
-// hint between the reels, and an orange "duration stripe" underneath. Static
-// body (real cassettes don't spin as a whole) — only the two reels turn.
+// Modeled on docs/formats/cassette_design_1.png. The first pass read too
+// close to a floppy disk because it merged the reference's two separate
+// zones — a small cream *label* strip up top, and a dark reel *window*
+// below it with only a sliver of orange peeking around its edges — into one
+// big pale rectangle spanning both. A cassette's defining feature is that
+// dark window with visible spools; a large pale panel is what reads as a
+// floppy's label/shutter instead. Static body (real cassettes don't spin as
+// a whole) — only the two reels turn.
 function CassetteRetro() {
   return (
     <svg viewBox="0 0 100 100" width="100%" height="100%">
-      <rect x={11} y={14} width={78} height={72} rx={8} fill="#1c1c22" stroke="#0a0a0d" strokeWidth={1} />
+      <rect x={11} y={14} width={78} height={72} rx={9} fill="#1c1c22" stroke="#0a0a0d" strokeWidth={1} />
       <rect x={18} y={21} width={11} height={8} rx={1.5} fill="#e2542e" />
-      <rect x={33} y={21} width={38} height={8} rx={1.5} fill="#2c2c33" />
-      <rect x={18} y={33} width={64} height={25} rx={2} fill="#f1e7d8" />
-      <g stroke="#e2542e" strokeWidth={1.6} opacity={0.6}>
-        <line x1={45} y1={36} x2={39} y2={55} />
-        <line x1={49.5} y1={36} x2={43.5} y2={55} />
-        <line x1={54} y1={36} x2={48} y2={55} />
+      {/* Label strip: cream, with faint ruled lines, like a paper insert —
+          not the dark filler this used to be. */}
+      <rect x={33} y={21} width={38} height={8} rx={1.5} fill="#f1e7d8" />
+      <line x1={36} y1={23.5} x2={68} y2={23.5} stroke="#c9bfae" strokeWidth={0.6} />
+      <line x1={36} y1={26.5} x2={68} y2={26.5} stroke="#c9bfae" strokeWidth={0.6} />
+      {/* Orange backing sits slightly taller/wider than the dark window on
+          top of it, so it only peeks out as a thin sliver top and bottom —
+          matching the reference instead of a solid orange fill. */}
+      <rect x={17} y={31} width={66} height={28} rx={2} fill="#e2542e" />
+      <rect x={18} y={33} width={64} height={24} rx={1} fill="#111114" />
+      {/* Fan of curved light catches between the reels — the reference
+          shows nested arcs (like a shutter or the tape itself catching
+          light), not straight diagonal lines. */}
+      <g fill="none" strokeLinecap="round">
+        <path d="M44,38 Q41,45.5 44,53" stroke="#e8e6e2" strokeWidth={1.4} opacity={0.85} />
+        <path d="M47,38 Q44.5,45.5 47,53" stroke="#c7c5c2" strokeWidth={1.2} opacity={0.65} />
+        <path d="M50,38 Q48,45.5 50,53" stroke="#9a9894" strokeWidth={1.1} opacity={0.5} />
+        <path d="M53,38 Q51.3,45.5 53,53" stroke="#706e6c" strokeWidth={1} opacity={0.4} />
+        <path d="M56,38 Q54.7,45.5 56,53" stroke="#4c4a49" strokeWidth={0.9} opacity={0.3} />
       </g>
-      <rect x={18} y={61} width={64} height={6} rx={2} fill="#e2542e" />
+      {/* Duration pill: shorter and right-aligned like the reference's "90
+          min" label + accent bar, instead of one full-width stripe. */}
+      <rect x={45} y={61} width={37} height={6} rx={2} fill="#e2542e" />
       {/* Bottom trapezoid panel — measured off the reference (docs/formats/
           cassette_design_1.png) with a grid overlay: it's narrow at the top
           and opens wider toward the body's bottom edge, like half of a long,
@@ -336,8 +355,10 @@ function CassetteRetro() {
       <circle cx={70} cy={82} r={1.6} fill="#0a0a0d" />
       <circle cx={16} cy={81} r={1.6} fill="#0a0a0d" />
       <circle cx={84} cy={81} r={1.6} fill="#0a0a0d" />
-      <GearReel cx={34} cy={45.5} r={8.5} hub="#f1e7d8" spoke="#0a0a0d" />
-      <GearReel cx={66} cy={45.5} r={8.5} hub="#f1e7d8" spoke="#0a0a0d" />
+      {/* White hub with a dark maroon ring/spokes — the reference's reels,
+          not the cream-on-near-black pair this used to have. */}
+      <GearReel cx={34} cy={45.5} r={8.5} hub="#ffffff" spoke="#7a2f2f" />
+      <GearReel cx={66} cy={45.5} r={8.5} hub="#ffffff" spoke="#7a2f2f" />
     </svg>
   );
 }
