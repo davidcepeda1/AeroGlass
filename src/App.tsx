@@ -118,9 +118,15 @@ async function resolvePaletteFor(coverArt: string | null): Promise<AlbumPalette>
 
 /** Picks a disc type at random, excluding whichever one played last — same
  * "don't repeat the last one" spirit as the wave pattern regen, so the
- * transition reads as varied instead of settling on one look. */
+ * transition reads as varied instead of settling on one look. Cassette1 and
+ * cassette2 count as the same "cassette" design for this rule: if the last
+ * transition was either one, both are excluded so a cassette never plays
+ * twice in a row, even as the other variant. */
 function pickDiscType(exclude: DiscType | null): DiscType {
-  const options = DISC_TYPES.filter((t) => t !== exclude);
+  const excludeCassette = exclude?.startsWith("cassette") ?? false;
+  const options = DISC_TYPES.filter(
+    (t) => t !== exclude && !(excludeCassette && t.startsWith("cassette")),
+  );
   return options[Math.floor(Math.random() * options.length)];
 }
 
