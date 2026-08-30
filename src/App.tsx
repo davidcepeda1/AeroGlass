@@ -138,8 +138,8 @@ function App() {
     stops: getEqualizerPalette(null),
     peakColor: getPeakColor(null),
   }));
-  const [phase, setPhase] = useState<TransitionPhase>("spinning"); // TEMP: force-preview the disc
-  const [discType, setDiscType] = useState<DiscType>("cassette2"); // TEMP: force-preview the disc
+  const [phase, setPhase] = useState<TransitionPhase>("idle");
+  const [discType, setDiscType] = useState<DiscType>("vinyl");
   // null = let CSS `fit-content` size the card (normal state); a number is
   // an inline px width locked in only while a transition is in flight, so
   // the width transition has two concrete endpoints to animate between.
@@ -358,7 +358,11 @@ function App() {
   const artist = hasTrack ? displaySong.artist : "—";
   const isPlaying = displaySong.isPlaying;
   const eqLevels = audioLevels ?? decorativeLevels;
-  const isDiscShape = phase === "collapsing" || phase === "spinning" || phase === "measuring";
+  // With no real track to show, stay parked on the spinning disc instead of
+  // ever revealing the "No track playing" placeholder pill.
+  const showIdleDisc = phase === "idle" && !hasTrack;
+  const isDiscShape =
+    phase === "collapsing" || phase === "spinning" || phase === "measuring" || showIdleDisc;
 
   return (
     <main
@@ -367,7 +371,7 @@ function App() {
       style={cardWidth !== null ? { width: cardWidth } : undefined}
       data-tauri-drag-region
     >
-      {phase !== "idle" && (
+      {(phase !== "idle" || showIdleDisc) && (
         <div className="disc-overlay">
           <DiscTransition type={discType} accentColor={eqPalette.peakColor} />
         </div>
