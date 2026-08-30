@@ -1,76 +1,173 @@
 export type DiscType = "vinyl" | "cd" | "cassette1" | "cassette2";
 
 interface DiscTransitionProps {
-  type: DiscType;
-  /** Accent tint pulled from the album palette (see `resolvePaletteFor` in
-   * App.tsx), so the loading disc visually matches the equalizer instead of
-   * being a generic gray graphic. */
-  accentColor: string;
+	type: DiscType;
+	/** Accent tint pulled from the album palette (see `resolvePaletteFor` in
+	 * App.tsx), so the loading disc visually matches the equalizer instead of
+	 * being a generic gray graphic. */
+	accentColor: string;
 }
 
 /** A cassette's spool reel: a white/cream hub with a dark 8-point gear cross,
  * the only part of either cassette design that actually spins — the body
  * stays put, same as a real tape deck. */
 function GearReel({
-  cx,
-  cy,
-  r,
-  hub,
-  spoke,
+	cx,
+	cy,
+	r,
+	hub,
+	spoke,
 }: {
-  cx: number;
-  cy: number;
-  r: number;
-  hub: string;
-  spoke: string;
+	cx: number;
+	cy: number;
+	r: number;
+	hub: string;
+	spoke: string;
 }) {
-  return (
-    <g transform={`translate(${cx},${cy})`}>
-      <g>
-        <circle r={r} fill={hub} />
-        <circle r={r} fill="none" stroke={spoke} strokeWidth={1} opacity={0.5} />
-        <g stroke={spoke} strokeWidth={r * 0.19}>
-          <line x1={0} y1={-r * 0.7} x2={0} y2={r * 0.7} />
-          <line x1={-r * 0.7} y1={0} x2={r * 0.7} y2={0} />
-          <line x1={-r * 0.5} y1={-r * 0.5} x2={r * 0.5} y2={r * 0.5} />
-          <line x1={-r * 0.5} y1={r * 0.5} x2={r * 0.5} y2={-r * 0.5} />
-        </g>
-        <circle r={r * 0.22} fill={spoke} />
-        <animateTransform
-          attributeName="transform"
-          type="rotate"
-          from="0"
-          to="360"
-          dur="1.6s"
-          repeatCount="indefinite"
-        />
-      </g>
-    </g>
-  );
+	return (
+		<g transform={`translate(${cx},${cy})`}>
+			<g>
+				<circle r={r} fill={hub} />
+				<circle
+					r={r}
+					fill="none"
+					stroke={spoke}
+					strokeWidth={1}
+					opacity={0.5}
+				/>
+				<g stroke={spoke} strokeWidth={r * 0.19}>
+					<line x1={0} y1={-r * 0.7} x2={0} y2={r * 0.7} />
+					<line x1={-r * 0.7} y1={0} x2={r * 0.7} y2={0} />
+					<line x1={-r * 0.5} y1={-r * 0.5} x2={r * 0.5} y2={r * 0.5} />
+					<line x1={-r * 0.5} y1={r * 0.5} x2={r * 0.5} y2={-r * 0.5} />
+				</g>
+				<circle r={r * 0.22} fill={spoke} />
+				<animateTransform
+					attributeName="transform"
+					type="rotate"
+					from="0"
+					to="360"
+					dur="1.6s"
+					repeatCount="indefinite"
+				/>
+			</g>
+		</g>
+	);
 }
 
+// HTML/CSS layers (same approach as Cd below) rather than pure SVG, so the
+// groove texture and the specular sheen can use repeating-/conic-gradient —
+// CSS-only features SVG can't paint natively. Everything but the sheen and
+// grooves stays inside the spinning layer, same as Cd's disc+hub group; the
+// sheen is what actually reads as "spinning" instead of a still photo — two
+// soft specular streaks fixed to the vinyl's surface that sweep past a
+// viewer's eye once per rotation, the way real light catches the grooves.
 function Vinyl({ accentColor }: { accentColor: string }) {
-  return (
-    <svg viewBox="0 0 100 100" width="100%" height="100%">
-      <g>
-        <circle cx={50} cy={50} r={48} fill="#141414" />
-        <circle cx={50} cy={50} r={48} fill="none" stroke="rgba(255,255,255,0.08)" />
-        <circle cx={50} cy={50} r={40} fill="none" stroke="rgba(255,255,255,0.07)" />
-        <circle cx={50} cy={50} r={32} fill="none" stroke="rgba(255,255,255,0.07)" />
-        <circle cx={50} cy={50} r={24} fill="none" stroke="rgba(255,255,255,0.06)" />
-        <circle cx={50} cy={50} r={15} fill={accentColor} />
-        <circle cx={50} cy={50} r={3} fill="#0b0b0b" />
-        <animateTransform
-          attributeName="transform"
-          type="rotate"
-          from="0 50 50"
-          to="360 50 50"
-          dur="3s"
-          repeatCount="indefinite"
-        />
-      </g>
-    </svg>
-  );
+	return (
+		<div className="disc-vinyl-wrap">
+			<style>{`
+        .disc-vinyl-wrap { position: relative; width: 100%; height: 100%; }
+        .disc-vinyl-spin { position: absolute; inset: 0; animation: disc-vinyl-spin 2.8s linear infinite; }
+        @keyframes disc-vinyl-spin { to { transform: rotate(360deg); } }
+        .disc-vinyl-disc {
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          background: radial-gradient(circle at 40% 36%, #333338 0%, #1c1c20 28%, #0a0a0c 60%, #000000 100%);
+          box-shadow:
+            inset 0 0 0 1px rgba(255, 255, 255, 0.07),
+            inset 0 3px 8px rgba(255, 255, 255, 0.06),
+            inset 0 -4px 12px rgba(0, 0, 0, 0.65);
+        }
+        /* Fine concentric groove rings — a repeating ring pattern reads as
+           the record's actual grooves instead of a flat painted disc. */
+        .disc-vinyl-grooves {
+          position: absolute;
+          inset: 7%;
+          border-radius: 50%;
+          background: repeating-radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.07) 0px,
+            rgba(255, 255, 255, 0.07) 0.6px,
+            transparent 0.6px,
+            transparent 3px
+          );
+          mix-blend-mode: screen;
+          opacity: 0.55;
+        }
+        /* The spinning specular sheen — the visual cue that this is turning,
+           not a static icon. */
+        .disc-vinyl-sheen {
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          background: conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            transparent 18deg,
+            rgba(255, 255, 255, 0.55) 34deg,
+            transparent 52deg,
+            transparent 185deg,
+            rgba(255, 255, 255, 0.28) 202deg,
+            transparent 222deg,
+            transparent 360deg
+          );
+          mix-blend-mode: screen;
+        }
+        .disc-vinyl-label {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 42%;
+          height: 42%;
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+          background: ${accentColor};
+          box-shadow:
+            inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+            inset -3px -3px 7px rgba(0, 0, 0, 0.4),
+            inset 3px 3px 7px rgba(255, 255, 255, 0.4),
+            0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        /* Faint printed rings on the paper label, same groove-ring motif at
+           a much finer, lower-contrast scale. */
+        .disc-vinyl-label::before {
+          content: "";
+          position: absolute;
+          inset: 8%;
+          border-radius: 50%;
+          background: repeating-radial-gradient(
+            circle,
+            rgba(0, 0, 0, 0.1) 0px,
+            rgba(0, 0, 0, 0.1) 1px,
+            transparent 1px,
+            transparent 16%
+          );
+        }
+        .disc-vinyl-spindle {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 6%;
+          height: 6%;
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+          background: #050505;
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .disc-vinyl-spin { animation: none; }
+        }
+      `}</style>
+			<div className="disc-vinyl-spin">
+				<div className="disc-vinyl-disc" />
+				<div className="disc-vinyl-grooves" />
+				<div className="disc-vinyl-sheen" />
+				<div className="disc-vinyl-label" />
+				<div className="disc-vinyl-spindle" />
+			</div>
+		</div>
+	);
 }
 
 // Modeled precisely on the classic "music file" CD-with-a-note icon
@@ -88,9 +185,9 @@ function Vinyl({ accentColor }: { accentColor: string }) {
 // the disc's lower-left (docs/formats/idea1.png marks the spot) and just
 // pulses gently — only the disc + hub actually rotate underneath it.
 function Cd() {
-  return (
-    <div className="disc-cd2-wrap">
-      <style>{`
+	return (
+		<div className="disc-cd2-wrap">
+			<style>{`
         .disc-cd2-wrap { position: relative; width: 100%; height: 100%; }
         .disc-cd2-spin { position: absolute; inset: 0; animation: disc-cd2-spin 2.4s linear infinite; }
         @keyframes disc-cd2-spin { to { transform: rotate(360deg); } }
@@ -247,55 +344,100 @@ function Cd() {
           .disc-cd2-spin, .disc-cd2-note { animation: none; }
         }
       `}</style>
-      <div className="disc-cd2-spin">
-        <div className="disc-cd2-disc" />
-        <div className="disc-cd2-rainbow" />
-        <div className="disc-cd2-glare" />
-        <div className="disc-cd2-vignette" />
-        <div className="disc-cd2-brushed" />
-        <div className="disc-cd2-hub-ring g1" />
-        <div className="disc-cd2-hub-ring g2" />
-        <div className="disc-cd2-hub-ring g3" />
-        <div className="disc-cd2-hub-ring g4" />
-        <div className="disc-cd2-hub-ring g5" />
-      </div>
-      <svg className="disc-cd2-note" viewBox="0 0 200 200">
-        <defs>
-          <linearGradient id="disc-cd2-note-body" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#4a4a4e" />
-            <stop offset="42%" stopColor="#141417" />
-            <stop offset="100%" stopColor="#000000" />
-          </linearGradient>
-          <filter id="disc-cd2-note-shadow" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation={4.5} />
-          </filter>
-        </defs>
-        {/* Notehead + stem drawn as two overlapping shapes deliberately
+			<div className="disc-cd2-spin">
+				<div className="disc-cd2-disc" />
+				<div className="disc-cd2-rainbow" />
+				<div className="disc-cd2-glare" />
+				<div className="disc-cd2-vignette" />
+				<div className="disc-cd2-brushed" />
+				<div className="disc-cd2-hub-ring g1" />
+				<div className="disc-cd2-hub-ring g2" />
+				<div className="disc-cd2-hub-ring g3" />
+				<div className="disc-cd2-hub-ring g4" />
+				<div className="disc-cd2-hub-ring g5" />
+			</div>
+			<svg className="disc-cd2-note" viewBox="0 0 200 200">
+				<defs>
+					<linearGradient id="disc-cd2-note-body" x1="0" y1="0" x2="1" y2="1">
+						<stop offset="0%" stopColor="#4a4a4e" />
+						<stop offset="42%" stopColor="#141417" />
+						<stop offset="100%" stopColor="#000000" />
+					</linearGradient>
+					<filter
+						id="disc-cd2-note-shadow"
+						x="-60%"
+						y="-60%"
+						width="220%"
+						height="220%"
+					>
+						<feGaussianBlur stdDeviation={4.5} />
+					</filter>
+				</defs>
+				{/* Notehead + stem drawn as two overlapping shapes deliberately
             overlapped deep into each other (not just touching at the edge)
             so the union reads as one seamless silhouette instead of leaving
             a notch where a straight edge met the ellipse boundary. */}
-        <g transform="translate(-6,86) scale(0.42)">
-          <g transform="translate(5,7)" opacity={0.35} filter="url(#disc-cd2-note-shadow)">
-            <ellipse cx={52} cy={148} rx={23} ry={17} transform="rotate(-25 52 148)" fill="#021428" />
-            <path d="M55,144 L120,38 L132,41 L65,148 Z" fill="#021428" />
-            <path d="M120,38 C142,41 158,56 152,74 C147,90 126,92 118,76 C128,68 134,52 120,38 Z" fill="#021428" />
-          </g>
-          <g>
-            <ellipse cx={52} cy={148} rx={23} ry={17} transform="rotate(-25 52 148)" fill="url(#disc-cd2-note-body)" />
-            <path d="M55,144 L120,38 L132,41 L65,148 Z" fill="url(#disc-cd2-note-body)" />
-            <path
-              d="M120,38 C142,41 158,56 152,74 C147,90 126,92 118,76 C128,68 134,52 120,38 Z"
-              fill="url(#disc-cd2-note-body)"
-            />
-          </g>
-          <g opacity={0.85}>
-            <path d="M74,129 L124,42" stroke="#ffffff" strokeWidth={3.5} strokeLinecap="round" fill="none" opacity={0.75} />
-            <ellipse cx={44} cy={139} rx={9} ry={4.5} transform="rotate(-25 44 139)" fill="#ffffff" opacity={0.55} />
-          </g>
-        </g>
-      </svg>
-    </div>
-  );
+				<g transform="translate(-6,86) scale(0.42)">
+					<g
+						transform="translate(5,7)"
+						opacity={0.35}
+						filter="url(#disc-cd2-note-shadow)"
+					>
+						<ellipse
+							cx={52}
+							cy={148}
+							rx={23}
+							ry={17}
+							transform="rotate(-25 52 148)"
+							fill="#021428"
+						/>
+						<path d="M55,144 L120,38 L132,41 L65,148 Z" fill="#021428" />
+						<path
+							d="M120,38 C142,41 158,56 152,74 C147,90 126,92 118,76 C128,68 134,52 120,38 Z"
+							fill="#021428"
+						/>
+					</g>
+					<g>
+						<ellipse
+							cx={52}
+							cy={148}
+							rx={23}
+							ry={17}
+							transform="rotate(-25 52 148)"
+							fill="url(#disc-cd2-note-body)"
+						/>
+						<path
+							d="M55,144 L120,38 L132,41 L65,148 Z"
+							fill="url(#disc-cd2-note-body)"
+						/>
+						<path
+							d="M120,38 C142,41 158,56 152,74 C147,90 126,92 118,76 C128,68 134,52 120,38 Z"
+							fill="url(#disc-cd2-note-body)"
+						/>
+					</g>
+					<g opacity={0.85}>
+						<path
+							d="M74,129 L124,42"
+							stroke="#ffffff"
+							strokeWidth={3.5}
+							strokeLinecap="round"
+							fill="none"
+							opacity={0.75}
+						/>
+						<ellipse
+							cx={44}
+							cy={139}
+							rx={9}
+							ry={4.5}
+							transform="rotate(-25 44 139)"
+							fill="#ffffff"
+							opacity={0.55}
+						/>
+					</g>
+				</g>
+			</svg>
+		</div>
+	);
 }
 
 // Modeled on docs/formats/cassette_design_1.png. The first pass read too
@@ -307,53 +449,119 @@ function Cd() {
 // floppy's label/shutter instead. Static body (real cassettes don't spin as
 // a whole) — only the two reels turn.
 function CassetteRetro() {
-  return (
-    <svg viewBox="0 0 100 100" width="100%" height="100%">
-      <rect x={11} y={14} width={78} height={72} rx={9} fill="#1c1c22" stroke="#0a0a0d" strokeWidth={1} />
-      {/* Side-locking nubs, borrowed from CassetteColor's reference (this
+	return (
+		<svg viewBox="0 0 100 100" width="100%" height="100%">
+			<rect
+				x={11}
+				y={14}
+				width={78}
+				height={72}
+				rx={9}
+				fill="#1c1c22"
+				stroke="#0a0a0d"
+				strokeWidth={1}
+			/>
+			{/* Side-locking nubs, borrowed from CassetteColor's reference (this
           design's own source art doesn't show them, but they read as the
           same structural detail) — positioned low, level with the bottom
           trapezoid panel, same as there. */}
-      <rect x={6} y={62} width={7} height={13} rx={2} fill="#1c1c22" stroke="#0a0a0d" strokeWidth={1} />
-      <rect x={87} y={62} width={7} height={13} rx={2} fill="#1c1c22" stroke="#0a0a0d" strokeWidth={1} />
-      {/* One single rounded frame running cream / orange / cream again — not
+			<rect
+				x={6}
+				y={62}
+				width={7}
+				height={13}
+				rx={2}
+				fill="#1c1c22"
+				stroke="#0a0a0d"
+				strokeWidth={1}
+			/>
+			<rect
+				x={87}
+				y={62}
+				width={7}
+				height={13}
+				rx={2}
+				fill="#1c1c22"
+				stroke="#0a0a0d"
+				strokeWidth={1}
+			/>
+			{/* One single rounded frame running cream / orange / cream again — not
           three separately-bordered pieces stacked with gaps. The reference
           traces one continuous outline the whole way down to the "90 min"
           row; only the fill color changes along it, via a clip instead of
           separate shapes. */}
-      <defs>
-        <clipPath id="disc-cassette1-frame-clip">
-          <rect x={17} y={19} width={66} height={46} rx={3} />
-        </clipPath>
-      </defs>
-      <g clipPath="url(#disc-cassette1-frame-clip)">
-        <rect x={17} y={19} width={66} height={11} fill="#f1e7d8" />
-        <rect x={17} y={30} width={66} height={28} fill="#e2542e" />
-        <rect x={17} y={58} width={66} height={7} fill="#f1e7d8" />
-      </g>
-      <rect x={18} y={21} width={11} height={8} rx={1.5} fill="#e2542e" />
-      <line x1={36} y1={23.5} x2={68} y2={23.5} stroke="#c9bfae" strokeWidth={0.6} />
-      <line x1={36} y1={26.5} x2={68} y2={26.5} stroke="#c9bfae" strokeWidth={0.6} />
-      {/* Reel window: a smaller dark rect inset within the frame's orange
+			<defs>
+				<clipPath id="disc-cassette1-frame-clip">
+					<rect x={17} y={19} width={66} height={46} rx={3} />
+				</clipPath>
+			</defs>
+			<g clipPath="url(#disc-cassette1-frame-clip)">
+				<rect x={17} y={19} width={66} height={11} fill="#f1e7d8" />
+				<rect x={17} y={30} width={66} height={28} fill="#e2542e" />
+				<rect x={17} y={58} width={66} height={7} fill="#f1e7d8" />
+			</g>
+			<rect x={18} y={21} width={11} height={8} rx={1.5} fill="#e2542e" />
+			<line
+				x1={36}
+				y1={23.5}
+				x2={68}
+				y2={23.5}
+				stroke="#c9bfae"
+				strokeWidth={0.6}
+			/>
+			<line
+				x1={36}
+				y1={26.5}
+				x2={68}
+				y2={26.5}
+				stroke="#c9bfae"
+				strokeWidth={0.6}
+			/>
+			{/* Reel window: a smaller dark rect inset within the frame's orange
           band, not a separate bordered panel of its own — narrowed to match
           CassetteColor's proportions so orange shows as a margin on the
           sides too, not just top/bottom. */}
-      <rect x={21} y={33} width={58} height={24} rx={1} fill="#111114" />
-      {/* Fan of curved light catches between the reels — the reference
+			<rect x={21} y={33} width={58} height={24} rx={1} fill="#111114" />
+			{/* Fan of curved light catches between the reels — the reference
           shows nested arcs (like a shutter or the tape itself catching
           light), not straight diagonal lines. */}
-      <g fill="none" strokeLinecap="round">
-        <path d="M44,38 Q41,45.5 44,53" stroke="#e8e6e2" strokeWidth={1.4} opacity={0.85} />
-        <path d="M47,38 Q44.5,45.5 47,53" stroke="#c7c5c2" strokeWidth={1.2} opacity={0.65} />
-        <path d="M50,38 Q48,45.5 50,53" stroke="#9a9894" strokeWidth={1.1} opacity={0.5} />
-        <path d="M53,38 Q51.3,45.5 53,53" stroke="#706e6c" strokeWidth={1} opacity={0.4} />
-        <path d="M56,38 Q54.7,45.5 56,53" stroke="#4c4a49" strokeWidth={0.9} opacity={0.3} />
-      </g>
-      {/* Duration pill: sits inside the frame's bottom cream band (not
+			<g fill="none" strokeLinecap="round">
+				<path
+					d="M44,38 Q41,45.5 44,53"
+					stroke="#e8e6e2"
+					strokeWidth={1.4}
+					opacity={0.85}
+				/>
+				<path
+					d="M47,38 Q44.5,45.5 47,53"
+					stroke="#c7c5c2"
+					strokeWidth={1.2}
+					opacity={0.65}
+				/>
+				<path
+					d="M50,38 Q48,45.5 50,53"
+					stroke="#9a9894"
+					strokeWidth={1.1}
+					opacity={0.5}
+				/>
+				<path
+					d="M53,38 Q51.3,45.5 53,53"
+					stroke="#706e6c"
+					strokeWidth={1}
+					opacity={0.4}
+				/>
+				<path
+					d="M56,38 Q54.7,45.5 56,53"
+					stroke="#4c4a49"
+					strokeWidth={0.9}
+					opacity={0.3}
+				/>
+			</g>
+			{/* Duration pill: sits inside the frame's bottom cream band (not
           floating below it), shorter and right-aligned like the
           reference's "90 min" label + accent bar. */}
-      <rect x={45} y={59} width={35} height={5} rx={2} fill="#e2542e" />
-      {/* Bottom trapezoid panel — measured off the reference (docs/formats/
+			<rect x={45} y={59} width={35} height={5} rx={2} fill="#e2542e" />
+			{/* Bottom trapezoid panel — measured off the reference (docs/formats/
           cassette_design_1.png) with a grid overlay: it's narrow at the top
           and opens wider toward the body's bottom edge, like half of a long,
           wide hexagon — not the reverse (wide-top-narrowing-down reads as a
@@ -361,25 +569,31 @@ function CassetteRetro() {
           Outlined in the same orange accent — with its 5 rivets arced
           (center-high), plus two more rivets outside it at the body's own
           bottom corners. */}
-      {/* Fill and outline are two separate paths on purpose: the reference's
+			{/* Fill and outline are two separate paths on purpose: the reference's
           accent border only runs along the top edge and the two diagonal
           sides — the bottom edge is left unstroked, blending straight into
           the body's own border instead of double-lining it. */}
-      <path d="M32,69 L69,69 L81,85 L20,85 Z" fill="#18181d" />
-      <path d="M20,85 L32,69 L69,69 L81,85" fill="none" stroke="#e2542e" strokeWidth={1.4} strokeLinejoin="round" />
-      <circle cx={30} cy={82} r={1.6} fill="#0a0a0d" />
-      <circle cx={40} cy={78.5} r={1.6} fill="#0a0a0d" />
-      <circle cx={50} cy={76} r={1.6} fill="#0a0a0d" />
-      <circle cx={60} cy={78.5} r={1.6} fill="#0a0a0d" />
-      <circle cx={70} cy={82} r={1.6} fill="#0a0a0d" />
-      <circle cx={16} cy={81} r={1.6} fill="#0a0a0d" />
-      <circle cx={84} cy={81} r={1.6} fill="#0a0a0d" />
-      {/* White hub with a dark maroon ring/spokes — the reference's reels,
+			<path d="M32,69 L69,69 L81,85 L20,85 Z" fill="#18181d" />
+			<path
+				d="M20,85 L32,69 L69,69 L81,85"
+				fill="none"
+				stroke="#e2542e"
+				strokeWidth={1.4}
+				strokeLinejoin="round"
+			/>
+			<circle cx={30} cy={82} r={1.6} fill="#0a0a0d" />
+			<circle cx={40} cy={78.5} r={1.6} fill="#0a0a0d" />
+			<circle cx={50} cy={76} r={1.6} fill="#0a0a0d" />
+			<circle cx={60} cy={78.5} r={1.6} fill="#0a0a0d" />
+			<circle cx={70} cy={82} r={1.6} fill="#0a0a0d" />
+			<circle cx={16} cy={81} r={1.6} fill="#0a0a0d" />
+			<circle cx={84} cy={81} r={1.6} fill="#0a0a0d" />
+			{/* White hub with a dark maroon ring/spokes — the reference's reels,
           not the cream-on-near-black pair this used to have. */}
-      <GearReel cx={35} cy={45.5} r={8} hub="#ffffff" spoke="#7a2f2f" />
-      <GearReel cx={65} cy={45.5} r={8} hub="#ffffff" spoke="#7a2f2f" />
-    </svg>
-  );
+			<GearReel cx={35} cy={45.5} r={8} hub="#ffffff" spoke="#7a2f2f" />
+			<GearReel cx={65} cy={45.5} r={8} hub="#ffffff" spoke="#7a2f2f" />
+		</svg>
+	);
 }
 
 // Modeled on docs/formats/cassette_design_2.png: a light gray shell, a
@@ -388,56 +602,89 @@ function CassetteRetro() {
 // notch tab, and the little side-locking nubs. Same static-body rule as
 // CassetteRetro — only the reels spin.
 function CassetteColor() {
-  return (
-    <svg viewBox="0 0 100 100" width="100%" height="100%">
-      <defs>
-        <clipPath id="disc-cassette2-stripe-clip">
-          <rect x={17} y={22} width={66} height={42} rx={4} />
-        </clipPath>
-      </defs>
-      <rect x={9} y={15} width={82} height={70} rx={9} fill="#c9cbce" stroke="#1c1c1f" strokeWidth={2.4} />
-      <rect x={17} y={22} width={66} height={42} rx={4} fill="#141416" />
-      <g clipPath="url(#disc-cassette2-stripe-clip)">
-        <rect x={17} y={22} width={66} height={9} fill="#f1efe9" />
-        <rect x={17} y={31} width={66} height={7} fill="#1f9e93" />
-        <rect x={17} y={38} width={66} height={7} fill="#f5b731" />
-        <rect x={17} y={45} width={66} height={7} fill="#f0812e" />
-        <rect x={17} y={52} width={66} height={12} fill="#e8412a" />
-      </g>
-      <rect x={21} y={33} width={58} height={20} rx={4} fill="#141416" />
-      <path d="M45,38 L43,48 L48,48 L49,38 Z" fill="#e9e3d6" />
-      <path d="M55,38 L57,48 L52,48 L51,38 Z" fill="#e9e3d6" />
-      <circle cx={14} cy={21} r={1.8} fill="#1c1c1f" />
-      <circle cx={86} cy={21} r={1.8} fill="#1c1c1f" />
-      {/* Bottom-corner rivets get the "donut" ring style (a light center
+	return (
+		<svg viewBox="0 0 100 100" width="100%" height="100%">
+			<defs>
+				<clipPath id="disc-cassette2-stripe-clip">
+					<rect x={17} y={22} width={66} height={42} rx={4} />
+				</clipPath>
+			</defs>
+			<rect
+				x={9}
+				y={15}
+				width={82}
+				height={70}
+				rx={9}
+				fill="#c9cbce"
+				stroke="#1c1c1f"
+				strokeWidth={2.4}
+			/>
+			<rect x={17} y={22} width={66} height={42} rx={4} fill="#141416" />
+			<g clipPath="url(#disc-cassette2-stripe-clip)">
+				<rect x={17} y={22} width={66} height={9} fill="#f1efe9" />
+				<rect x={17} y={31} width={66} height={7} fill="#1f9e93" />
+				<rect x={17} y={38} width={66} height={7} fill="#f5b731" />
+				<rect x={17} y={45} width={66} height={7} fill="#f0812e" />
+				<rect x={17} y={52} width={66} height={12} fill="#e8412a" />
+			</g>
+			<rect x={21} y={33} width={58} height={20} rx={4} fill="#141416" />
+			<path d="M45,38 L43,48 L48,48 L49,38 Z" fill="#e9e3d6" />
+			<path d="M55,38 L57,48 L52,48 L51,38 Z" fill="#e9e3d6" />
+			<circle cx={14} cy={21} r={1.8} fill="#1c1c1f" />
+			<circle cx={86} cy={21} r={1.8} fill="#1c1c1f" />
+			{/* Bottom-corner rivets get the "donut" ring style (a light center
           punched into the dark dot) to match the reference — the two
           top-corner ones above stay plain solid, same as it shows there. */}
-      <circle cx={14} cy={79} r={2} fill="#1c1c1f" />
-      <circle cx={14} cy={79} r={0.8} fill="#c9cbce" />
-      <circle cx={86} cy={79} r={2} fill="#1c1c1f" />
-      <circle cx={86} cy={79} r={0.8} fill="#c9cbce" />
-      {/* Bottom trapezoid panel — same reference-measured shape as
+			<circle cx={14} cy={79} r={2} fill="#1c1c1f" />
+			<circle cx={14} cy={79} r={0.8} fill="#c9cbce" />
+			<circle cx={86} cy={79} r={2} fill="#1c1c1f" />
+			<circle cx={86} cy={79} r={0.8} fill="#c9cbce" />
+			{/* Bottom trapezoid panel — same reference-measured shape as
           CassetteRetro's: narrow at the top, opening wider toward the
           body's bottom edge (half a long hexagon, not a triangle) — with
           its 5 rivets arced (center-high, donut style). */}
-      {/* Same open-bottom treatment as CassetteRetro's panel above. */}
-      <path d="M33,68 L67,68 L82,85 L19,85 Z" fill="#c9cbce" />
-      <path d="M19,85 L33,68 L67,68 L82,85" fill="none" stroke="#1c1c1f" strokeWidth={2} strokeLinejoin="round" />
-      <circle cx={29} cy={80} r={1.8} fill="#1c1c1f" />
-      <circle cx={40} cy={77} r={1.8} fill="#1c1c1f" />
-      <circle cx={50} cy={74} r={1.8} fill="#1c1c1f" />
-      <circle cx={50} cy={74} r={0.7} fill="#c9cbce" />
-      <circle cx={60} cy={77} r={1.8} fill="#1c1c1f" />
-      <circle cx={71} cy={80} r={1.8} fill="#1c1c1f" />
-      {/* Side-locking nubs — measured off the reference with a grid overlay:
+			{/* Same open-bottom treatment as CassetteRetro's panel above. */}
+			<path d="M33,68 L67,68 L82,85 L19,85 Z" fill="#c9cbce" />
+			<path
+				d="M19,85 L33,68 L67,68 L82,85"
+				fill="none"
+				stroke="#1c1c1f"
+				strokeWidth={2}
+				strokeLinejoin="round"
+			/>
+			<circle cx={29} cy={80} r={1.8} fill="#1c1c1f" />
+			<circle cx={40} cy={77} r={1.8} fill="#1c1c1f" />
+			<circle cx={50} cy={74} r={1.8} fill="#1c1c1f" />
+			<circle cx={50} cy={74} r={0.7} fill="#c9cbce" />
+			<circle cx={60} cy={77} r={1.8} fill="#1c1c1f" />
+			<circle cx={71} cy={80} r={1.8} fill="#1c1c1f" />
+			{/* Side-locking nubs — measured off the reference with a grid overlay:
           they sit low, roughly level with the bottom trapezoid panel, not
           centered on the reels. */}
-      <rect x={4} y={61} width={7} height={13} rx={2} fill="#c9cbce" stroke="#1c1c1f" strokeWidth={2.4} />
-      <rect x={89} y={61} width={7} height={13} rx={2} fill="#c9cbce" stroke="#1c1c1f" strokeWidth={2.4} />
-      <GearReel cx={35} cy={44} r={8} hub="#ffffff" spoke="#141416" />
-      <GearReel cx={65} cy={44} r={8} hub="#ffffff" spoke="#141416" />
-    </svg>
-  );
+			<rect
+				x={4}
+				y={61}
+				width={7}
+				height={13}
+				rx={2}
+				fill="#c9cbce"
+				stroke="#1c1c1f"
+				strokeWidth={2.4}
+			/>
+			<rect
+				x={89}
+				y={61}
+				width={7}
+				height={13}
+				rx={2}
+				fill="#c9cbce"
+				stroke="#1c1c1f"
+				strokeWidth={2.4}
+			/>
+			<GearReel cx={35} cy={44} r={8} hub="#ffffff" spoke="#141416" />
+			<GearReel cx={65} cy={44} r={8} hub="#ffffff" spoke="#141416" />
+		</svg>
+	);
 }
 
 /** Loading visual shown while the widget is mid-transition between tracks.
@@ -445,15 +692,18 @@ function CassetteColor() {
  * SMIL (`animateTransform`), Cd via an inline `<style>` tag it carries with
  * it — either way there's no external CSS dependency, so this can be
  * dropped anywhere at any size. */
-export default function DiscTransition({ type, accentColor }: DiscTransitionProps) {
-  switch (type) {
-    case "vinyl":
-      return <Vinyl accentColor={accentColor} />;
-    case "cd":
-      return <Cd />;
-    case "cassette1":
-      return <CassetteRetro />;
-    case "cassette2":
-      return <CassetteColor />;
-  }
+export default function DiscTransition({
+	type,
+	accentColor,
+}: DiscTransitionProps) {
+	switch (type) {
+		case "vinyl":
+			return <Vinyl accentColor={accentColor} />;
+		case "cd":
+			return <Cd />;
+		case "cassette1":
+			return <CassetteRetro />;
+		case "cassette2":
+			return <CassetteColor />;
+	}
 }
