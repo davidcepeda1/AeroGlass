@@ -332,18 +332,6 @@ function App() {
 
 	useEffect(() => {
 		const applySong = (song: SongInfo) => {
-			// MPRIS/WinRT can report a placeholder ("Unknown title") for a
-			// moment before real metadata lands — same glitch
-			// beginDiscTransition already waits out mid-transition. Once a
-			// real track is showing, a placeholder read must not look like a
-			// track change, or that race spuriously flashes the disc-morph
-			// transition for what's actually the same song settling in.
-			// ponytail: a player that permanently reports "Unknown title" while
-			// playing (genuinely titleless stream) would never surface here —
-			// acceptable ceiling, revisit if that turns out to happen for real.
-			if (trackKeyRef.current !== null && isPlaceholderTitle(song.title))
-				return;
-
 			const key = trackKey(song);
 
 			// Same track (or first paint): update in place, no transition needed.
