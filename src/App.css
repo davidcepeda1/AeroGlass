@@ -318,20 +318,28 @@ p {
    recoloreada con la paleta del álbum para encajar con el resto del
    reproductor)
    ========================= */
+/* Same aspect ratio as the SVG viewBox (200:48) so nothing letterboxes —
+   scaling width/height independently would squash the horn silhouette. */
 .eq-horn {
-  height: 20px;
-  width: 46px;
+  height: 23px;
+  width: 96px;
   flex-shrink: 0;
   overflow: visible;
 }
 
+/* Reactive: --horn-level (0-1, set per band group in EqualizerBars.tsx from
+   the real frequency bands, bass outward / treble inward) drives glow and
+   opacity only — the wedge geometry itself never changes, so the silhouette
+   stays identical to the reference at any volume. */
 .eq-horn-band polygon:not([fill^="url"]) {
   fill: var(--horn-color);
-  filter: drop-shadow(0 0 1.5px var(--horn-color)) drop-shadow(0 0 3px var(--horn-color));
+  opacity: calc(0.45 + var(--horn-level, 0) * 0.55);
+  filter: drop-shadow(0 0 calc(1.5px + var(--horn-level, 0) * 2px) var(--horn-color))
+    drop-shadow(0 0 calc(3px + var(--horn-level, 0) * 6px) var(--horn-color));
   transition:
     fill 0.15s linear,
-    filter 0.15s linear,
-    opacity 0.15s linear;
+    filter 0.05s linear,
+    opacity 0.05s linear;
 }
 
 .eq-horn-band polygon[fill^="url"] {
@@ -340,19 +348,25 @@ p {
 
 .eq-horn-peak {
   fill: var(--peak-color, #7cff8c);
-  filter: drop-shadow(0 0 2px var(--peak-color, #7cff8c));
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(calc(1 + var(--pill-level, 0) * 0.35));
+  filter: drop-shadow(0 0 calc(2px + var(--pill-level, 0) * 4px) var(--peak-color, #7cff8c));
   transition:
-    opacity 0.15s linear,
-    filter 0.15s linear;
+    transform 0.05s linear,
+    filter 0.05s linear,
+    opacity 0.15s linear;
 }
 
 .eq-horn.eq-paused .eq-horn-band polygon:not([fill^="url"]) {
   fill: rgba(255, 255, 255, 0.12);
+  opacity: 1;
   filter: none;
 }
 
 .eq-horn.eq-paused .eq-horn-peak {
   opacity: 0.3;
+  transform: none;
   filter: none;
 }
 
@@ -428,6 +442,14 @@ p {
 
 .eq-switcher:hover {
   filter: brightness(1.35);
+}
+
+/* The horn badge reads as a centered emblem (like the reference logo),
+   unlike the other styles' left-aligned meter bars — scoped so it doesn't
+   change alignment when a different style is active. */
+.eq-switcher:has(.eq-horn) {
+  display: flex;
+  justify-content: center;
 }
 
 /* =========================

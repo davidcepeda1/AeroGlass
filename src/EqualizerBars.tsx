@@ -245,11 +245,49 @@ function wedgePoints(
 	return `${outerX},${outerY} ${innerX},${innerY} ${innerX},${bottomInnerY} ${outerX},${bottomOuterY}`;
 }
 
+// Groups the 12 raw frequency bands (low -> high, see BAR_COUNT in
+// src-tauri/audio/bands.rs) into one average per horn tier, eased with the
+// same attack/release ballistics as the other styles so it reads as
+// following the music instead of flickering with raw FFT noise. Low bands
+// feed the outer/largest wedge (bass reads as "big"), high bands the
+// innermost/smallest one (treble reads as "small, sparkly") — the horn's
+// own shape decides the mapping, nothing here reshapes the silhouette.
+function useHornTierLevels(levels: number[], tierCount: number): number[] {
+	const levelsRef = useRef(levels);
+	levelsRef.current = levels;
+	const [smoothed, setSmoothed] = useState<number[]>(() =>
+		new Array(tierCount).fill(0),
+	);
+
+	useEffect(() => {
+		const id = setInterval(() => {
+			setSmoothed((prev) => {
+				const raw = levelsRef.current;
+				const perTier = Math.max(1, Math.ceil(raw.length / tierCount));
+				return prev.map((current, t) => {
+					const slice = raw.slice(t * perTier, (t + 1) * perTier);
+					const target = slice.length
+						? slice.reduce((sum, v) => sum + v, 0) / slice.length
+						: 0;
+					const rate = target >= current ? LEVEL_ATTACK : LEVEL_RELEASE;
+					return current + (target - current) * rate;
+				});
+			});
+		}, PEAK_DECAY_INTERVAL_MS);
+		return () => clearInterval(id);
+	}, [tierCount]);
+
+	return smoothed;
+}
+
 function HornBars({
+	levels,
 	isPlaying,
 	palette,
 	peakColor,
-}: Omit<EqualizerBarsProps, "style" | "levels">) {
+}: Omit<EqualizerBarsProps, "style">) {
+	const tierLevels = useHornTierLevels(levels, HORN_BANDS.length);
+	const overall = tierLevels.reduce((sum, v) => sum + v, 0) / tierLevels.length;
 	return (
 		<svg
 			className={`eq-horn${isPlaying ? "" : " eq-paused"}`}
@@ -285,7 +323,12 @@ function HornBars({
 					<g
 						key={i}
 						className="eq-horn-band"
-						style={{ "--horn-color": color } as CSSProperties}
+						style={
+							{
+								"--horn-color": color,
+								"--horn-level": isPlaying ? (tierLevels[i] ?? 0) : 0,
+							} as CSSProperties
+						}
 					>
 						<polygon points={leftPoints} />
 						<polygon points={leftPoints} fill="url(#horn-dots)" />
@@ -296,12 +339,17 @@ function HornBars({
 			})}
 			<rect
 				className="eq-horn-peak"
+				style={
+					{
+						"--peak-color": peakColor,
+						"--pill-level": isPlaying ? overall : 0,
+					} as CSSProperties
+				}
 				x={HORN_VIEW_WIDTH / 2 - 8}
 				y={HORN_VIEW_HEIGHT / 2 - 5}
 				width={16}
 				height={10}
 				rx={5}
-				style={{ "--peak-color": peakColor } as CSSProperties}
 			/>
 		</svg>
 	);
@@ -316,7 +364,12 @@ function EqualizerBars({
 }: EqualizerBarsProps) {
 	if (style === "horn") {
 		return (
-			<HornBars isPlaying={isPlaying} palette={palette} peakColor={peakColor} />
+			<HornBars
+				levels={levels}
+				isPlaying={isPlaying}
+				palette={palette}
+				peakColor={peakColor}
+			/>
 		);
 	}
 	return style === "pill" || style === "neon" ? (
