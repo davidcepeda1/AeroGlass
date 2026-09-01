@@ -347,6 +347,33 @@ p {
 }
 
 /* =========================
+   Ecualizador estilo "neon" (misma barra "pill", acabado con borde
+   luminoso y textura de puntos tipo letrero neón retro)
+   ========================= */
+.eq-neon .eq-pill-bar {
+  border: 1px solid var(--eq-edge, rgba(255, 255, 255, 0.5));
+  box-shadow:
+    0 0 2px var(--eq-edge, rgba(255, 255, 255, 0.5)),
+    0 0 6px var(--eq-glow, rgba(62, 232, 90, 0.45)),
+    0 0 12px var(--eq-glow, rgba(62, 232, 90, 0.3));
+}
+
+.eq-neon .eq-pill-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.45) 30%, transparent 31%);
+  background-size: 3px 3px;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.eq.eq-neon.eq-paused .eq-pill-bar {
+  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* =========================
    Selector de estilo del ecualizador (clic para cambiar)
    ========================= */
 .eq-switcher {
