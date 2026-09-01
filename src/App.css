@@ -313,6 +313,50 @@ p {
 }
 
 /* =========================
+   Ecualizador estilo "horn" (silueta de bocina/embudo, calcada del logo
+   de referencia — figura estática, no un VU meter por bandas — solo
+   recoloreada con la paleta del álbum para encajar con el resto del
+   reproductor)
+   ========================= */
+.eq-horn {
+  height: 20px;
+  width: 46px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.eq-horn-band polygon:not([fill^="url"]) {
+  fill: var(--horn-color);
+  filter: drop-shadow(0 0 1.5px var(--horn-color)) drop-shadow(0 0 3px var(--horn-color));
+  transition:
+    fill 0.15s linear,
+    filter 0.15s linear,
+    opacity 0.15s linear;
+}
+
+.eq-horn-band polygon[fill^="url"] {
+  mix-blend-mode: multiply;
+}
+
+.eq-horn-peak {
+  fill: var(--peak-color, #7cff8c);
+  filter: drop-shadow(0 0 2px var(--peak-color, #7cff8c));
+  transition:
+    opacity 0.15s linear,
+    filter 0.15s linear;
+}
+
+.eq-horn.eq-paused .eq-horn-band polygon:not([fill^="url"]) {
+  fill: rgba(255, 255, 255, 0.12);
+  filter: none;
+}
+
+.eq-horn.eq-paused .eq-horn-peak {
+  opacity: 0.3;
+  filter: none;
+}
+
+/* =========================
    Ecualizador estilo "pill" (barras sólidas, sin segmentos)
    ========================= */
 .eq-pill-bar {

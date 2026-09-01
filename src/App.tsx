@@ -12,7 +12,7 @@ import {
 } from "./lib/albumColor";
 import "./App.css";
 
-const EQ_STYLES: EqualizerStyle[] = ["segmented", "pill", "neon"];
+const EQ_STYLES: EqualizerStyle[] = ["segmented", "pill", "neon", "horn"];
 const DISC_TYPES: DiscType[] = ["vinyl", "cd", "cassette1", "cassette2"];
 
 const WAVE_BARS = 12;

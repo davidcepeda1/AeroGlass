@@ -1,6 +1,6 @@
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 
-export type EqualizerStyle = "segmented" | "pill" | "neon";
+export type EqualizerStyle = "segmented" | "pill" | "neon" | "horn";
 
 interface EqualizerBarsProps {
 	/** One 0-1 level per bar — real audio energy, or a decorative fallback. */
@@ -221,6 +221,92 @@ function SegmentedBars({
 	);
 }
 
+// Nested wedge widths (outer/large -> inner/small, mouth to throat), one
+// side of the horn silhouette from the reference logo. Mirrored for the
+// right half. Static shape, not a per-band meter — it only reacts to
+// isPlaying, same as the reference badge never animated per frequency.
+const HORN_BANDS = [
+	{ outerX: 2, innerX: 34, outerY: 2, innerY: 12 },
+	{ outerX: 40, innerX: 58, outerY: 6, innerY: 14 },
+	{ outerX: 62, innerX: 76, outerY: 10, innerY: 16 },
+	{ outerX: 80, innerX: 90, outerY: 14, innerY: 18 },
+];
+const HORN_VIEW_WIDTH = 200;
+const HORN_VIEW_HEIGHT = 48;
+
+function wedgePoints(
+	outerX: number,
+	innerX: number,
+	outerY: number,
+	innerY: number,
+) {
+	const bottomOuterY = HORN_VIEW_HEIGHT - outerY;
+	const bottomInnerY = HORN_VIEW_HEIGHT - innerY;
+	return `${outerX},${outerY} ${innerX},${innerY} ${innerX},${bottomInnerY} ${outerX},${bottomOuterY}`;
+}
+
+function HornBars({
+	isPlaying,
+	palette,
+	peakColor,
+}: Omit<EqualizerBarsProps, "style" | "levels">) {
+	return (
+		<svg
+			className={`eq-horn${isPlaying ? "" : " eq-paused"}`}
+			viewBox={`0 0 ${HORN_VIEW_WIDTH} ${HORN_VIEW_HEIGHT}`}
+			role="img"
+			aria-label="Sound bar"
+		>
+			<defs>
+				<pattern
+					id="horn-dots"
+					width="4"
+					height="4"
+					patternUnits="userSpaceOnUse"
+				>
+					<circle cx="1" cy="1" r="0.9" fill="rgba(0,0,0,0.45)" />
+				</pattern>
+			</defs>
+			{HORN_BANDS.map((band, i) => {
+				const color = sampleGradient(palette, i / (HORN_BANDS.length - 1));
+				const leftPoints = wedgePoints(
+					band.outerX,
+					band.innerX,
+					band.outerY,
+					band.innerY,
+				);
+				const rightPoints = wedgePoints(
+					HORN_VIEW_WIDTH - band.outerX,
+					HORN_VIEW_WIDTH - band.innerX,
+					band.outerY,
+					band.innerY,
+				);
+				return (
+					<g
+						key={i}
+						className="eq-horn-band"
+						style={{ "--horn-color": color } as CSSProperties}
+					>
+						<polygon points={leftPoints} />
+						<polygon points={leftPoints} fill="url(#horn-dots)" />
+						<polygon points={rightPoints} />
+						<polygon points={rightPoints} fill="url(#horn-dots)" />
+					</g>
+				);
+			})}
+			<rect
+				className="eq-horn-peak"
+				x={HORN_VIEW_WIDTH / 2 - 8}
+				y={HORN_VIEW_HEIGHT / 2 - 5}
+				width={16}
+				height={10}
+				rx={5}
+				style={{ "--peak-color": peakColor } as CSSProperties}
+			/>
+		</svg>
+	);
+}
+
 function EqualizerBars({
 	levels,
 	isPlaying,
@@ -228,6 +314,11 @@ function EqualizerBars({
 	palette,
 	peakColor,
 }: EqualizerBarsProps) {
+	if (style === "horn") {
+		return (
+			<HornBars isPlaying={isPlaying} palette={palette} peakColor={peakColor} />
+		);
+	}
 	return style === "pill" || style === "neon" ? (
 		<PillBars
 			levels={levels}
