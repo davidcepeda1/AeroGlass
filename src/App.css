@@ -405,15 +405,25 @@ p {
 }
 
 /* =========================
-   Ecualizador estilo "neon" (misma barra "pill", acabado con borde
-   luminoso y textura de puntos tipo letrero neón retro)
+   Ecualizador estilo "neon" (misma barra "pill", pero sin el tapón oscuro
+   estático que normalmente cubre la parte apagada — aquí se recorta la
+   barra de verdad con clip-path, así que solo se ve el tramo encendido
+   moviéndose, con su textura de puntos, nunca una caja fija)
    ========================= */
+.eq-neon .eq-pill-mask {
+  display: none;
+}
+
 .eq-neon .eq-pill-bar {
-  border: 1px solid var(--eq-edge, rgba(255, 255, 255, 0.5));
-  box-shadow:
-    0 0 2px var(--eq-edge, rgba(255, 255, 255, 0.5)),
-    0 0 6px var(--eq-glow, rgba(62, 232, 90, 0.45)),
-    0 0 12px var(--eq-glow, rgba(62, 232, 90, 0.3));
+  box-sizing: border-box;
+  border: 1px solid var(--eq-edge, rgba(255, 255, 255, 0.6));
+  box-shadow: none;
+  clip-path: inset(calc(var(--unlit, 1) * 100%) 0 0 0);
+  filter: drop-shadow(0 0 6px var(--eq-glow, rgba(62, 232, 90, 0.45)))
+    drop-shadow(0 0 14px var(--eq-glow, rgba(62, 232, 90, 0.3)));
+  transition:
+    clip-path 0.08s ease-out,
+    border-color 0.15s linear;
 }
 
 .eq-neon .eq-pill-bar::before {
@@ -426,10 +436,6 @@ p {
   pointer-events: none;
 }
 
-.eq.eq-neon.eq-paused .eq-pill-bar {
-  box-shadow: none;
-  border-color: rgba(255, 255, 255, 0.12);
-}
 
 /* =========================
    Selector de estilo del ecualizador (clic para cambiar)

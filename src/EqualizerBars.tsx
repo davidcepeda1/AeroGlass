@@ -96,7 +96,11 @@ function PillBars({
 			{levels.map((level, barIndex) => {
 				const lit = isPlaying ? Math.max(0.15, level) : 0;
 				return (
-					<div className="eq-pill-bar" key={barIndex}>
+					<div
+						className="eq-pill-bar"
+						key={barIndex}
+						style={{ "--unlit": 1 - lit } as CSSProperties}
+					>
 						<div
 							className="eq-pill-mask"
 							style={{ "--unlit": 1 - lit } as CSSProperties}
